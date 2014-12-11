@@ -9,11 +9,14 @@ TIMETOWAITFORABORT = 0.5
 #class for controlling the running and shutting down of something (omxplayer for now)
 class VidPlayerController(threading.Thread):
 
-    def __init__(self, filePath, otherOptions=None):
+    def __init__(self, filePath, otherOptions=None, cmd=None):
         threading.Thread.__init__(self)
 
         #setup the cmd
-        self.somethingcmd = SOMETHINGCMD
+        if cmd:
+            self.somethingcmd = cmd
+        else:
+            self.somethingcmd = SOMETHINGCMD
 
         #add file path, timeout and preview to options
         self.somethingcmd.append("-o hdmi")
