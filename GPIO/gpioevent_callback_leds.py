@@ -37,6 +37,7 @@ class GpioEvent(object):
 
     def callback_flash(self, channel):
 
+        print '...FLASH callback called from channel %s' % channel
         if GPIO.input(self.pin_out1) and GPIO.input(self.pin_out2):
             for x in xrange(1,10):
                 GPIO.output(self.pin_out1, False)
@@ -52,7 +53,7 @@ class GpioEvent(object):
 
         try:
             GPIO.add_event_detect(self.pin_in, GPIO.RISING, callback=self.callback_rising, bouncetime=300)
-            GPIO.add_event_callback(self.pin_in, self.callback_flash)
+            #GPIO.add_event_callback(self.pin_in, self.callback_flash)
             while True:
                 # GPIO.add_event_callback(pin_in, callback_falling)
                 # GPIO.add_event_callback(pin_in, callback_both)
