@@ -56,3 +56,6 @@ target/
 # CTags files
 .tags
 .tags_sorted_by_file
+
+# Videos
+*.h264
