@@ -52,11 +52,8 @@ def main():
         print "Starting pi powered cam"
         print "Data path - " + args.path
 
-        #set gpio mode
-        GPIO.setmode(GPIO.BOARD)
-
         #create button
-        button = ButtonControl(BUTTONGPIOPIN, 1, BUTTONSHORTPRESSTICKS, BUTTONLONGPRESSTICKS, BUTTONTICKTIME)
+        button = ButtonControl(BUTTONGPIOPIN, 0, BUTTONSHORTPRESSTICKS, BUTTONLONGPRESSTICKS, BUTTONTICKTIME)
         button.start()
         print "Button - started controller"
 

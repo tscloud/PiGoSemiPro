@@ -22,7 +22,7 @@ def main():
 
     pin_in = 12
     # GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(pin_in, GPIO.IN)
+    GPIO.setup(pin_in, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     try:
         keep_going = True
