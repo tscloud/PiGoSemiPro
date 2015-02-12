@@ -38,7 +38,9 @@ def main():
     # camera props
     VIDEOFPS = 25
     VIDEOHEIGHT = 1080
+    # VIDEOHEIGHT = 600
     VIDEOWIDTH = 1920
+    # VIDEOWIDTH = 800
 
     # function globals
     #button = None
