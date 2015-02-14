@@ -36,7 +36,7 @@ def main():
     # LEDGPIOPIN = 17
 
     # camera props
-    VIDEOFPS = 25
+    VIDEOFPS = 5
     VIDEOHEIGHT = 1080
     VIDEOWIDTH = 1920
 
