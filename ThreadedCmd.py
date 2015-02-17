@@ -1,3 +1,6 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
 import sys
 import subprocess
 import threading
@@ -20,7 +23,8 @@ class ThreadedCmd(threading.Thread):
 
         #if there are other options, add them
         if otherOptions != None:
-            self.somethingcmd = self.somethingcmd + otherOptions
+            #self.somethingcmd = self.somethingcmd + otherOptions
+            self.somethingcmd = "%s %s" % (self.somethingcmd, otherOptions)
         else:
             #add file path, timeout and preview to options
             self.somethingcmd.append("-o hdmi")
@@ -32,7 +36,8 @@ class ThreadedCmd(threading.Thread):
 
     def run(self):
         #run the command
-        cmdproc = subprocess.Popen(self.somethingcmd)
+        print '###\n%s\n###' % self.somethingcmd
+        cmdproc = subprocess.Popen(self.somethingcmd, shell=True)
 
         #loop until its set to stopped or it stops
         self.running = True
@@ -51,7 +56,7 @@ class ThreadedCmd(threading.Thread):
 if __name__ == '__main__':
 
     #create command controller
-    vidcontrol = ThreadedCmd(None, "-o /home/pi/test.h264 -t 0 -n -w 600 -h 400 -fps 12", "raspivid")
+    vidcontrol = ThreadedCmd(None, "-o test.h264 -t 0 -n -w 600 -h 400 -fps 12", "raspivid")
     # vidcontrol = ThreadedCmd("/home/pi/test.h264")
 
     try:
