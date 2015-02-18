@@ -9,6 +9,7 @@ import threading, time
 class ButtonControl(threading.Thread):
 
     class ButtonPressStates():
+        """only used to determine last pressed state"""
         NOTPRESSED = 0
         SHORTPRESS = 1
         LONGPRESS = 2
@@ -57,12 +58,14 @@ class ButtonControl(threading.Thread):
             # wait for the button to be pressed
             print 'wait for the button to be pressed'
             print 'initial button state (2): %i' % self.get()
+            # Use GPIO.wait_for_edge(channel, GPIO.FALLING) here? <= NO need to poll to check if we are running
             while self.pressed() == False and self.running:
                 time.sleep(self.tickTime)
 
             print 'button pressed'
             ticks = 0
             # wait for the button to be released
+            # Use GPIO.wait_for_edge(channel, GPIO.RISING) here? <= NO need to poll to check if we are running
             while self.pressed() == True and self.running:
                 ticks += 1
                 time.sleep(self.tickTime)

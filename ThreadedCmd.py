@@ -12,7 +12,7 @@ TIMETOWAITFORABORT = 0.5
 #class for controlling the running and shutting down of something (omxplayer for now)
 class ThreadedCmd(threading.Thread):
 
-    def __init__(self, filePath, otherOptions=None, cmd=None):
+    def __init__(self, cmd=None, otherOptions=None):
         threading.Thread.__init__(self)
 
         #setup the cmd
@@ -22,13 +22,13 @@ class ThreadedCmd(threading.Thread):
             self.somethingcmd = SOMETHINGCMD
 
         #if there are other options, add them
-        if otherOptions != None:
+        if cmd != None:
             #self.somethingcmd = self.somethingcmd + otherOptions
             self.somethingcmd = "%s %s" % (self.somethingcmd, otherOptions)
         else:
             #add file path, timeout and preview to options
             self.somethingcmd.append("-o hdmi")
-            self.somethingcmd.append(filePath)
+            self.somethingcmd.append(otherOptions)
 
 
         #set state to not running
@@ -56,7 +56,7 @@ class ThreadedCmd(threading.Thread):
 if __name__ == '__main__':
 
     #create command controller
-    vidcontrol = ThreadedCmd(None, "-o test.h264 -t 0 -n -w 600 -h 400 -fps 12", "raspivid")
+    vidcontrol = ThreadedCmd("raspivid", "-o test.h264 -t 0 -n -w 600 -h 400 -fps 12")
     # vidcontrol = ThreadedCmd("/home/pi/test.h264")
 
     try:
@@ -74,7 +74,6 @@ if __name__ == '__main__':
     #Error
     except:
         print "Unexpected error:", sys.exc_info()[0]
-
         raise
 
     #if it finishes or Ctrl C, shut it down

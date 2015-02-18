@@ -74,9 +74,11 @@ def main():
                 button.getLastPressedState()
 
                 #start recording
-                with ThreadedCmd(None, "-o /home/pi/test.h264 -t 0 -n -w 600 -h 400 -fps 12", "raspivid") as camera:
+                # test_file = "/home/pi/test.h264"
+                cam_options = "-o %s -t 0 -n -w 600 -h 400 -fps 12" % fileSetup(args.path)
+                with ThreadedCmd("raspivid", cam_options) as camera:
                     #start recording
-                    camera.start_recording(fileSetup(args.path), inline_headers=False)
+                    camera.start()
                     print "Recording - started pi camera"
 
                     # wait for the button to be pressed
