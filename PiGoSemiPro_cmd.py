@@ -37,11 +37,9 @@ def main():
     # LEDGPIOPIN = 17
 
     # camera props
-    VIDEOFPS = 25
-    VIDEOHEIGHT = 1080
-    # VIDEOHEIGHT = 600
-    VIDEOWIDTH = 1920
-    # VIDEOWIDTH = 800
+    VIDEOFPS = 12
+    VIDEOHEIGHT = 400
+    VIDEOWIDTH = 600
 
     # function globals
     #button = None
@@ -56,7 +54,8 @@ def main():
         print "Data path - " + args.path
 
         #create button
-        button = ButtonControl(BUTTONGPIOPIN, 0, BUTTONSHORTPRESSTICKS, BUTTONLONGPRESSTICKS, BUTTONTICKTIME)
+        button = ButtonControl(BUTTONGPIOPIN, 0, BUTTONSHORTPRESSTICKS,
+                               BUTTONLONGPRESSTICKS, BUTTONTICKTIME)
         button.start()
         print "Button - started controller"
 
@@ -75,7 +74,8 @@ def main():
 
                 #start recording
                 # test_file = "/home/pi/test.h264"
-                cam_options = "-o %s -t 0 -n -w 600 -h 400 -fps 12" % fileSetup(args.path)
+                cam_options = "-o %s -t 0 -n -w %s -h %s -fps %s" % \
+                                (fileSetup(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS)
                 with ThreadedCmd("raspivid", cam_options) as camera:
                     #start recording
                     camera.start()
