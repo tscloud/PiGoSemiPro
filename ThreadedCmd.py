@@ -6,7 +6,6 @@ import subprocess
 import threading
 import time
 
-SOMETHINGCMD = ["omxplayer"]
 TIMETOWAITFORABORT = 0.5
 
 #class for controlling the running and shutting down of something (omxplayer for now)
@@ -15,21 +14,11 @@ class ThreadedCmd(threading.Thread):
     def __init__(self, cmd=None, otherOptions=None):
         threading.Thread.__init__(self)
 
-        #setup the cmd
-        if cmd:
-            self.somethingcmd = cmd
-        else:
-            self.somethingcmd = SOMETHINGCMD
-
         #if there are other options, add them
         if cmd != None:
-            #self.somethingcmd = self.somethingcmd + otherOptions
             self.somethingcmd = "%s %s" % (self.somethingcmd, otherOptions)
         else:
-            #add file path, timeout and preview to options
-            self.somethingcmd.append("-o hdmi")
-            self.somethingcmd.append(otherOptions)
-
+            raise ValueError("Must specify command")
 
         #set state to not running
         self.running = False
