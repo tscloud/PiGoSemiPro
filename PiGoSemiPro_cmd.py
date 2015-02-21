@@ -7,7 +7,7 @@ import picamera
 # from ThreadedCmd import ThreadedCmd
 from CommandButton import CommandButton
 from PiCameraButton import PiCameraButton
-import time, argparse, sys, os
+import time, argparse, sys, os, traceback
 
 def fileSetup(path):
     """
@@ -55,15 +55,12 @@ def buttonLoop(cmdButton):
 def main():
     # pin number based on GPIO.setmode(GPIO.BOARD)
     CAMERAGPIOPIN = 12
-    PLAYERGPIOPIN = 17
+    PLAYERGPIOPIN = 11
 
     # camera props
     VIDEOFPS = 12
     VIDEOHEIGHT = 400
     VIDEOWIDTH = 600
-
-    #set gpio mode
-    GPIO.setmode(GPIO.BOARD)
 
     #Command line options
     parser = argparse.ArgumentParser(description="PiGoSemiPro")
@@ -113,17 +110,26 @@ def main():
 
     except:
         print "Unexpected error - ", sys.exc_info()[0], sys.exc_info()[1]
+        print traceback.format_exc()
         raise
 
     finally:
         print "Stopping pi powered cam"
         #stop camera button
-        cameraButton.stopController()
-        cameraButton.join()
+        try:
+            cameraButton.stopController()
+            cameraButton.join()
+        except:
+            print "Unexpected error - ", sys.exc_info()[0], sys.exc_info()[1]
+            pass
         print "Camera Button - Stopped controller"
         #stop camera button
-        playerButton.stopController()
-        playerButton.join()
+        try:
+            playerButton.stopController()
+            playerButton.join()
+        except:
+            print "Unexpected error - ", sys.exc_info()[0], sys.exc_info()[1]
+            pass
         print "Player Button - Stopped controller"
         #cleanup gpio
         GPIO.cleanup()

@@ -15,6 +15,7 @@ class ThreadedCmd(threading.Thread):
         threading.Thread.__init__(self)
 
         #if there are other options, add them
+        self.somethingcmd = None
         if cmd != None:
             self.somethingcmd = "%s %s" % (self.somethingcmd, otherOptions)
         else:
