@@ -117,19 +117,17 @@ def main():
         print "Stopping pi powered cam"
         #stop camera button
         try:
-            cameraButton.stopController()
-            cameraButton.join()
+            cameraButton.button.stopController()
+            cameraButton.button.join()
         except:
             print "Unexpected error - ", sys.exc_info()[0], sys.exc_info()[1]
-            pass
         print "Camera Button - Stopped controller"
         #stop camera button
         try:
-            playerButton.stopController()
-            playerButton.join()
+            playerButton.button.stopController()
+            playerButton.button.join()
         except:
             print "Unexpected error - ", sys.exc_info()[0], sys.exc_info()[1]
-            pass
         print "Player Button - Stopped controller"
         #cleanup gpio
         GPIO.cleanup()
