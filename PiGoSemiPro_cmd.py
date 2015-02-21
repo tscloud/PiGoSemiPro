@@ -74,7 +74,7 @@ def main():
         #create camera button - ThreadedCmd in the form of a CommandButton
         cam_options = "-o %s -t 0 -n -w %s -h %s -fps %s" % \
                     (fileSetup(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS)
-        cameraButton = CommandButton(CAMERAGPIOPIN, "raspivid", cam_options)
+        cameraButton = CommandButton(CAMERAGPIOPIN, "/usr/bin/raspivid", cam_options)
         print "Camera Button - started controller"
 
         #create camera button - PiCameraButton

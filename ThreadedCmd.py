@@ -17,7 +17,7 @@ class ThreadedCmd(threading.Thread):
         #if there are other options, add them
         self.somethingcmd = None
         if cmd != None:
-            self.somethingcmd = "%s %s" % (self.somethingcmd, otherOptions)
+            self.somethingcmd = "%s %s" % (cmd, otherOptions)
         else:
             raise ValueError("Must specify command")
 
@@ -36,8 +36,11 @@ class ThreadedCmd(threading.Thread):
         self.running = False
 
         #kill process if still running
-        if cmdproc.poll() == True:
-            cmdproc.kill()
+        print 'ThreadedCmd: about to kill(1)...'
+        #if cmdproc.poll() == True:
+        #    print 'ThreadedCmd: about to kill(2)...'
+        #    cmdproc.kill()
+        cmdproc.kill()
 
     def stopController(self):
         self.running = False
