@@ -55,7 +55,6 @@ class ButtonControl(threading.Thread):
         self.lastPressedState = self.ButtonPressStates.NOTPRESSED
 
         # if the button is pressed when the class starts, wait till it is released
-        print 'initial button state (1): %i' % self.get()
         while self.pressed():
             print 'button is pressed when the class starts, wait till it is released'
             time.sleep(self.tickTime)
@@ -63,8 +62,6 @@ class ButtonControl(threading.Thread):
         # while the control is running
         while self.running:
             # wait for the button to be pressed
-            print 'wait for the button to be pressed'
-            print 'initial button state (2): %i' % self.get()
             # Use GPIO.wait_for_edge(channel, GPIO.FALLING) here? <= NO
             # need to poll to check if we ot the stop command
             while self.pressed() == False and self.running:
