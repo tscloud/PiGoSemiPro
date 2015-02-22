@@ -4,8 +4,8 @@
 import RPi.GPIO as GPIO
 import picamera
 # from ButtonControl import ButtonControl
-# from ThreadedCmd import ThreadedCmd
-from CommandButton import CommandButton
+from ThreadedCmd import ThreadedCmd
+from ButtonControlPlus import ButtonControlPlus
 from PiCameraButton import PiCameraButton
 import time, argparse, sys, os, traceback
 
@@ -31,26 +31,26 @@ def fileSetup(path):
 
     return now_fname
 
-def buttonLoop(cmdButton):
+def buttonLoop(cmd, button):
     """perform a loop around a CommandButton"""
     #get the last pressed state of the button and reset it
-    cmdButton.button.getLastPressedState()
+    button.getLastPressedState()
 
     #start the command
-    cmdButton.start()
+    cmd.start()
 
     # wait for the button to be pressed
     # important: reset button state or camera will start over again
-    while cmdButton.button.getLastPressedState() == cmdButton.button.ButtonPressStates.NOTPRESSED:
+    while button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED:
         #wait for a bit
         time.sleep(0.2)
 
     #stop the button
     print "Stopping command controller"
     #stop the controller
-    cmdButton.stopController()
+    cmd.stopController()
     #wait for the tread to finish if it hasn't already
-    cmdButton.join()
+    cmd.join()
     print "cmdButton joined..."
 
 def main():
@@ -72,35 +72,39 @@ def main():
         print "Starting pi powered cam"
         print "Data path - " + args.path
 
-        #create camera button - ThreadedCmd in the form of a CommandButton
-        cam_options = "-o %s -t 0 -n -w %s -h %s -fps %s" % \
-                    (fileSetup(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS)
-        cameraButton = CommandButton(CAMERAGPIOPIN, "/usr/bin/raspivid", cam_options)
         print "Camera Button - started controller"
+        cameraButton = ButtonControlPlus(CAMERAGPIOPIN)
+        cameraButton.start()
 
         #create camera button - PiCameraButton
         # cameraButton = PiCameraButton(CAMERAGPIOPIN, fileSetup(args.path))
 
-        #create player button
-        player_options = "-o hdmi %s" % fileSetup(args.path)
-        playerButton = CommandButton(PLAYERGPIOPIN, "omxplayer", player_options)
         print "Player Button - started controller"
+        playerButton = ButtonControlPlus(PLAYERGPIOPIN)
+        playerButton.start()
 
         print "PiGoSemiPro Ready"
 
         #we are designating the camera button as the botton to kill the app
         #while the button hasnt received a long press (shutdown), keep on looping
-        while cameraButton.button.checkLastPressedState() != cameraButton.button.ButtonPressStates.LONGPRESS:
+        while cameraButton.checkLastPressedState() != cameraButton.ButtonPressStates.LONGPRESS:
 
             #has the button been pressed for recording?
-            if cameraButton.button.checkLastPressedState() == cameraButton.button.ButtonPressStates.SHORTPRESS:
+            if cameraButton.checkLastPressedState() == cameraButton.ButtonPressStates.SHORTPRESS:
+                #create camera button ThreadedCmd
+                cam_options = "-o %s -t 0 -n -w %s -h %s -fps %s" % \
+                            (fileSetup(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS)
+                cameraCmd = ThreadedCmd("raspivid", cam_options)
                 print "Recording - started pi camera"
-                buttonLoop(cameraButton)
+                buttonLoop(cameraCmd, cameraButton)
 
             #has the button been pressed for playing?
-            elif playerButton.button.checkLastPressedState() == playerButton.button.ButtonPressStates.SHORTPRESS:
+            elif playerButton.checkLastPressedState() == playerButton.ButtonPressStates.SHORTPRESS:
+                #create player button ThreadedCmd
+                player_options = "-o hdmi %s" % fileSetup(args.path)
+                playerCmd = ThreadedCmd("omxplayer", player_options)
                 print "Playing - started pi player"
-                buttonLoop(playerButton)
+                buttonLoop(playerCmd, playerButton)
 
             else:
                 # have not received button press to start <- is this a good time?
@@ -118,15 +122,15 @@ def main():
         print "Stopping pi powered cam"
         #stop camera button
         try:
-            cameraButton.button.stopController()
-            cameraButton.button.join()
+            cameraButton.stopController()
+            cameraButton.join()
         except:
             print "Unexpected error - ", sys.exc_info()[0], sys.exc_info()[1]
         print "Camera Button - Stopped controller"
         #stop camera button
         try:
-            playerButton.button.stopController()
-            playerButton.button.join()
+            playerButton.stopController()
+            playerButton.join()
         except:
             print "Unexpected error - ", sys.exc_info()[0], sys.exc_info()[1]
         print "Player Button - Stopped controller"
