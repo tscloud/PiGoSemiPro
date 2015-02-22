@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import signal
+import os
 import subprocess
 import threading
 import time
@@ -27,7 +29,8 @@ class ThreadedCmd(threading.Thread):
     def run(self):
         #run the command
         print '###\n%s\n###' % self.somethingcmd
-        cmdproc = subprocess.Popen(self.somethingcmd, shell=True)
+        cmdproc = subprocess.Popen(self.somethingcmd, shell=True,
+                                   stdout=subprocess.PIPE, preexec_fn=os.setsid)
 
         #loop until its set to stopped or it stops
         self.running = True
@@ -40,7 +43,7 @@ class ThreadedCmd(threading.Thread):
         #if cmdproc.poll() == True:
         #    print 'ThreadedCmd: about to kill(2)...'
         #    cmdproc.kill()
-        cmdproc.kill()
+        os.killpg(cmdproc.pid, signal.SIGTERM)
 
     def stopController(self):
         self.running = False
