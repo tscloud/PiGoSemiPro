@@ -14,6 +14,7 @@ TIMETOWAITFORABORT = 0.5
 class ThreadedCmd(threading.Thread):
 
     def __init__(self, cmd=None, otherOptions=None):
+        #setup threading - is class inherits from Thread
         threading.Thread.__init__(self)
 
         #if there are other options, add them
@@ -44,7 +45,7 @@ class ThreadedCmd(threading.Thread):
         #    print 'ThreadedCmd: about to kill(2)...'
         #    cmdproc.kill()
         os.killpg(cmdproc.pid, signal.SIGTERM)
-
+        
     def stopController(self):
         self.running = False
 

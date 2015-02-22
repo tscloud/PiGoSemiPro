@@ -8,7 +8,6 @@ from ButtonControl import ButtonControl
 class CommandButton(ThreadedCmd):
 
     def __init__(self, gpioPin, cmd, cmd_options):
-
         BUTTONSHORTPRESSTICKS = 5
         BUTTONLONGPRESSTICKS = 200
         BUTTONTICKTIME = 0.01

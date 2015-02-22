@@ -51,6 +51,7 @@ def buttonLoop(cmdButton):
     cmdButton.stopController()
     #wait for the tread to finish if it hasn't already
     cmdButton.join()
+    print "cmdButton joined..."
 
 def main():
     # pin number based on GPIO.setmode(GPIO.BOARD)
