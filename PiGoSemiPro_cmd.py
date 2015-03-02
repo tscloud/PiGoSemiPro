@@ -9,7 +9,17 @@ from ButtonControlPlus import ButtonControlPlus
 from PiCameraButton import PiCameraButton
 import time, argparse, sys, os, traceback
 
-def fileSetup(path):
+# Custom exception
+class NoFilesToPlay(NameError):
+    pass
+
+class AllFilesPlayed(NameError):
+    pass
+
+class BadFileName(ValueError):
+    pass
+
+def fileSetupRec(path):
     """
     look for files previously created and increment
     file name convention: seminnnn.h264
@@ -24,9 +34,52 @@ def fileSetup(path):
     if not f_nums:
         now_fname = '/semi0001.h264'
     else:
-        now_fname = '/semi%04d.h264' % (max(f_nums)+1, )
+        now_fname = '/semi%04d.h264' % (max(f_nums)+1)
 
     now_fname = path+now_fname
+    print 'Current filename: %s' % now_fname
+
+    return now_fname
+
+def fileSetupPlay(path, lastFilePlayed):
+    """
+    look for file w/ highest "nnnn" and return
+    if file passed in => decrement and return that file
+    file name convention: seminnnn.h264
+    nnnn = 0001, 0002, etc.
+    """
+    now_fname = None
+
+    if lastFilePlayed != None:
+        try:
+            n = int(lastFilePlayed[5:4])
+        except ValueError:
+            raise BadFileName()
+
+        n = n-1
+        if n == 0:
+            # raise AllFilesPlayed()
+            # recursion
+            now_fname = fileSetupPlay(path, None)
+    else:
+        n = 0
+
+    if not now_fname:
+        past_fnames = next(os.walk(path))[2]
+        f_nums = []
+        for f in past_fnames:
+            if f.startswith('semi'):
+                f_nums.append(int(f[4:8]))
+
+        if not f_nums:
+            raise NoFilesToPlay()
+        elif n == 0:
+            now_fname = '/semi%04d.h264' % (max(f_nums))
+        else:
+            now_fname = '/semi%04d.h264' % (n)
+
+        now_fname = path+now_fname
+
     print 'Current filename: %s' % now_fname
 
     return now_fname
@@ -68,6 +121,9 @@ def main():
     parser.add_argument("path", help="The location of the data directory")
     args = parser.parse_args()
 
+    # used by player
+    fileToPlay = None
+
     try:
         print "Starting pi powered cam"
         print "Data path - " + args.path
@@ -87,13 +143,14 @@ def main():
 
         #we are designating the camera button as the botton to kill the app
         #while the button hasnt received a long press (shutdown), keep on looping
-        while cameraButton.checkLastPressedState() != cameraButton.ButtonPressStates.LONGPRESS:
+        while (cameraButton.checkLastPressedState() != cameraButton.ButtonPressStates.LONGPRESS and
+               playerButton.checkLastPressedState() != cameraButton.ButtonPressStates.LONGPRESS):
 
             #has the button been pressed for recording?
             if cameraButton.checkLastPressedState() == cameraButton.ButtonPressStates.SHORTPRESS:
                 #create camera button ThreadedCmd
                 cam_options = "-o %s -t 0 -n -w %s -h %s -fps %s" % \
-                            (fileSetup(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS)
+                            (fileSetupRec(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS)
                 cameraCmd = ThreadedCmd("raspivid", cam_options)
                 print "Recording - started pi camera"
                 buttonLoop(cameraCmd, cameraButton)
@@ -101,11 +158,18 @@ def main():
             #has the button been pressed for playing?
             elif playerButton.checkLastPressedState() == playerButton.ButtonPressStates.SHORTPRESS:
                 #create player button ThreadedCmd
-                player_options = "-o hdmi %s" % fileSetup(args.path)
-                playerCmd = ThreadedCmd("omxplayer", player_options)
-                print "Playing - started pi player"
-                buttonLoop(playerCmd, playerButton)
-
+                try:
+                    fileToPlay = fileSetupPlay(args.path, fileToPlay)
+                    player_options = "-o hdmi %s" % fileSetupPlay(args.path, fileToPlay)
+                    playerCmd = ThreadedCmd("omxplayer", player_options)
+                    print "Playing - started pi player"
+                    buttonLoop(playerCmd, playerButton)
+                except NoFilesToPlay:
+                    print "Nothing to play...try recording something"
+                except AllFilesPlayed:
+                    print "All files played...try recording some more"
+                except BadFileName:
+                    print "Bad file name...what are you trying to play?"
             else:
                 # have not received button press to start <- is this a good time?
                 time.sleep(0.2)
