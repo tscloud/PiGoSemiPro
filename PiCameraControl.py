@@ -23,13 +23,22 @@ class PiCameraControl(object):
         self.camera.video_stabilization = True
 
     def start(self):
-        #start recording
+        """start recording"""
         self.camera.start_recording(self.path, inline_headers=False)
         print "Recording - started pi camera"
 
     def stopController(self):
-        #stop the camera
+        """stop the camera"""
         self.camera.stop_recording()
         self.camera.close()
         #recording has finished
         print "Recording - stopped"
+
+    def running(self):
+        """check to see if camera running - needed for interface completeness"""
+        # is there a comparable method in picamera?
+        return True
+
+    def join(self):
+        """we're no a thread but - needed for interface completeness"""
+        return

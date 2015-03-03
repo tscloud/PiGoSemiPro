@@ -6,7 +6,7 @@ import picamera
 # from ButtonControl import ButtonControl
 from ThreadedCmd import ThreadedCmd
 from ButtonControlPlus import ButtonControlPlus
-from PiCameraButton import PiCameraButton
+from PiCameraControl import PiCameraControl
 import time, argparse, sys, os, traceback
 
 # Custom exceptions - Play
@@ -70,9 +70,9 @@ def fileSetupPlay(path, lastFilePlayed):
             raise BadFileName(lastFilePlayed)
 
         n = n-1
-        if n == 0:
+        if n <= 0:
             # raise AllFilesPlayed()
-            # recursion
+            # recursion - start list from the beginning
             now_fname = fileSetupPlay(path, None)
     else:
         n = 0
@@ -106,6 +106,8 @@ def buttonLoop(cmd, button):
     cmd.start()
 
     # wait for the button to be pressed
+    # should check to see if the thing you are trying to stop is still
+    #  running -> don't need to stop a stopped thing
     # important: reset button state or camera will start over again
     #while button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED:
     while (button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED and
@@ -147,9 +149,6 @@ def main():
         cameraButton = ButtonControlPlus(CAMERAGPIOPIN)
         cameraButton.start()
 
-        #create camera button - PiCameraButton
-        # cameraButton = PiCameraButton(CAMERAGPIOPIN, fileSetup(args.path))
-
         print "Player Button - started controller"
         playerButton = ButtonControlPlus(PLAYERGPIOPIN)
         playerButton.start()
@@ -163,16 +162,18 @@ def main():
 
             #has the button been pressed for recording?
             if cameraButton.checkLastPressedState() == cameraButton.ButtonPressStates.SHORTPRESS:
-                #create camera button ThreadedCmd
-                cam_options = "-o %s -t 0 -n -w %s -h %s -fps %s" % \
-                            (fileSetupRec(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS)
-                cameraCmd = ThreadedCmd("raspivid", cam_options)
+                #create camera ThreadedCmd
+                # cam_options = "-o %s -t 0 -n -w %s -h %s -fps %s" % \
+                #             (fileSetupRec(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS)
+                # cameraCmd = ThreadedCmd("raspivid", cam_options)
+                #create camera PiCameraControl
+                cameraCmd = PiCameraControl(fileSetupRec(args.path))
                 print "Recording - started pi camera"
                 buttonLoop(cameraCmd, cameraButton)
 
             #has the button been pressed for playing?
             elif playerButton.checkLastPressedState() == playerButton.ButtonPressStates.SHORTPRESS:
-                #create player button ThreadedCmd
+                #create player ThreadedCmd
                 try:
                     fileToPlay = fileSetupPlay(args.path, fileToPlay)
                     player_options = "-o hdmi %s" % fileToPlay
