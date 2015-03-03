@@ -9,15 +9,26 @@ from ButtonControlPlus import ButtonControlPlus
 from PiCameraButton import PiCameraButton
 import time, argparse, sys, os, traceback
 
-# Custom exception
+# Custom exceptions - Play
 class NoFilesToPlay(NameError):
-    pass
+    def __init__(self):
+
+        # Call the base class constructor with the parameters it needs
+        super(NameError, self).__init__()
 
 class AllFilesPlayed(NameError):
-    pass
+    def __init__(self):
 
-class BadFileName(ValueError):
-    pass
+        # Call the base class constructor with the parameters it needs
+        super(NameError, self).__init__()
+
+class BadFileName(NameError):
+    def __init__(self, filename):
+
+        # Call the base class constructor with the parameters it needs
+        super(NameError, self).__init__()
+        
+        self.filename = filename
 
 def fileSetupRec(path):
     """
@@ -37,7 +48,7 @@ def fileSetupRec(path):
         now_fname = '/semi%04d.h264' % (max(f_nums)+1)
 
     now_fname = path+now_fname
-    print 'Current filename: %s' % now_fname
+    print 'Current rec filename: %s' % now_fname
 
     return now_fname
 
@@ -52,9 +63,11 @@ def fileSetupPlay(path, lastFilePlayed):
 
     if lastFilePlayed != None:
         try:
-            n = int(lastFilePlayed[5:4])
+            print "lastFilePlayed: %s" % lastFilePlayed
+            print "nnnn: %s" % lastFilePlayed[6:10]
+            n = int(lastFilePlayed[6:10])
         except ValueError:
-            raise BadFileName()
+            raise BadFileName(lastFilePlayed)
 
         n = n-1
         if n == 0:
@@ -80,7 +93,7 @@ def fileSetupPlay(path, lastFilePlayed):
 
         now_fname = path+now_fname
 
-    print 'Current filename: %s' % now_fname
+    print 'Current play name: %s' % now_fname
 
     return now_fname
 
@@ -94,7 +107,9 @@ def buttonLoop(cmd, button):
 
     # wait for the button to be pressed
     # important: reset button state or camera will start over again
-    while button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED:
+    #while button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED:
+    while (button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED and
+           cmd.running):
         #wait for a bit
         time.sleep(0.2)
 
@@ -160,16 +175,19 @@ def main():
                 #create player button ThreadedCmd
                 try:
                     fileToPlay = fileSetupPlay(args.path, fileToPlay)
-                    player_options = "-o hdmi %s" % fileSetupPlay(args.path, fileToPlay)
+                    player_options = "-o hdmi %s" % fileToPlay
                     playerCmd = ThreadedCmd("omxplayer", player_options)
-                    print "Playing - started pi player"
+                    print "Playing file: %s - started pi player" % fileToPlay
                     buttonLoop(playerCmd, playerButton)
                 except NoFilesToPlay:
                     print "Nothing to play...try recording something"
+                    playerButton.getLastPressedState() # reset button state
                 except AllFilesPlayed:
                     print "All files played...try recording some more"
-                except BadFileName:
-                    print "Bad file name...what are you trying to play?"
+                    playerButton.getLastPressedState() # reset button state
+                except BadFileName as e:
+                    print "Bad file name...what are you trying to play? : %s" % e.filename
+                    playerButton.getLastPressedState() # reset button state
             else:
                 # have not received button press to start <- is this a good time?
                 time.sleep(0.2)
