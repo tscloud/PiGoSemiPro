@@ -109,9 +109,9 @@ def buttonLoop(cmd, button):
     # should check to see if the thing you are trying to stop is still
     #  running -> don't need to stop a stopped thing
     # important: reset button state or camera will start over again
-    #while button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED:
-    while (button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED and
-           cmd.running):
+    while button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED:
+    #while (button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED and
+    #       cmd.running):
         #wait for a bit
         time.sleep(0.2)
 
@@ -163,11 +163,11 @@ def main():
             #has the button been pressed for recording?
             if cameraButton.checkLastPressedState() == cameraButton.ButtonPressStates.SHORTPRESS:
                 #create camera ThreadedCmd
-                # cam_options = "-o %s -t 0 -n -w %s -h %s -fps %s" % \
-                #             (fileSetupRec(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS)
-                # cameraCmd = ThreadedCmd("raspivid", cam_options)
+                cam_options = "-o %s -t 0 -n -w %s -h %s -fps %s" % \
+                            (fileSetupRec(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS)
+                cameraCmd = ThreadedCmd("raspivid", cam_options)
                 #create camera PiCameraControl
-                cameraCmd = PiCameraControl(fileSetupRec(args.path))
+                #cameraCmd = PiCameraControl(fileSetupRec(args.path))
                 print "Recording - started pi camera"
                 buttonLoop(cameraCmd, cameraButton)
 

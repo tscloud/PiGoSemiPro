@@ -25,7 +25,7 @@ class PiCameraControl(object):
     def start(self):
         """start recording"""
         self.camera.start_recording(self.path, inline_headers=False)
-        print "Recording - started pi camera"
+        print "Recording - started pi camera (PiCameraControl)"
 
     def stopController(self):
         """stop the camera"""
