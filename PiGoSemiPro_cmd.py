@@ -109,9 +109,10 @@ def buttonLoop(cmd, button):
     # should check to see if the thing you are trying to stop is still
     #  running -> don't need to stop a stopped thing
     # important: reset button state or camera will start over again
-    while button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED:
+    while (button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED and
+           cmd.isAlive()):
     #while (button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED and
-    #       cmd.running):
+    #       cmd.isRunning()):
         #wait for a bit
         time.sleep(0.2)
 
@@ -126,7 +127,7 @@ def buttonLoop(cmd, button):
 def main():
     # pin number based on GPIO.setmode(GPIO.BOARD)
     CAMERAGPIOPIN = 12
-    PLAYERGPIOPIN = 11
+    PLAYERGPIOPIN = 18
 
     # camera props
     VIDEOFPS = 12

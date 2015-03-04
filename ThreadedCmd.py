@@ -53,6 +53,9 @@ class ThreadedCmd(threading.Thread):
     def stopController(self):
         self.running = False
 
+    def isRunning():
+        return self.running
+
 #test program
 if __name__ == '__main__':
 
