@@ -27,7 +27,7 @@ class BadFileName(NameError):
 
         # Call the base class constructor with the parameters it needs
         super(NameError, self).__init__()
-        
+
         self.filename = filename
 
 def fileSetupRec(path):
@@ -111,8 +111,6 @@ def buttonLoop(cmd, button):
     # important: reset button state or camera will start over again
     while (button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED and
            cmd.isAlive()):
-    #while (button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED and
-    #       cmd.isRunning()):
         #wait for a bit
         time.sleep(0.2)
 
@@ -156,7 +154,6 @@ def main():
 
         print "PiGoSemiPro Ready"
 
-        #we are designating the camera button as the botton to kill the app
         #while the button hasnt received a long press (shutdown), keep on looping
         while (cameraButton.checkLastPressedState() != cameraButton.ButtonPressStates.LONGPRESS and
                playerButton.checkLastPressedState() != cameraButton.ButtonPressStates.LONGPRESS):

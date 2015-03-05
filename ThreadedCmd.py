@@ -35,7 +35,6 @@ class ThreadedCmd(threading.Thread):
 
         #loop until its set to stopped or it stops
         self.running = True
-        print "%s : %s" % (self.somethingcmd, self.running)
         while self.running and cmdproc.poll() is None:
             time.sleep(TIMETOWAITFORABORT)
         self.running = False
@@ -49,7 +48,7 @@ class ThreadedCmd(threading.Thread):
             os.killpg(cmdproc.pid, signal.SIGTERM)
         except OSError:
             print "process already finished...OK"
-        
+
     def stopController(self):
         self.running = False
 
