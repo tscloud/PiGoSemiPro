@@ -131,6 +131,13 @@ def main():
     VIDEOFPS = 12
     VIDEOHEIGHT = 400
     VIDEOWIDTH = 600
+#    STREAMINGOPTS = "-o - -t 99999 -hf -w 640 -h 360 -fps 25|\
+#cvlcr stream:///dev/stdin --sout \
+#'#standard{access=http,mux=ts,dst=:8090}' :demux=h264"
+    STREAMINGOPTS = "-o - -t 99999 -hf -w %s -h %s -fps %s|\
+cvlcr stream:///dev/stdin --sout \
+'#standard{access=http,mux=ts,dst=:8090}' :demux=h264"
+    RECORDINGOPTS = "-o %s -t 0 -n -w %s -h %s -fps %s"
 
     #Command line options
     parser = argparse.ArgumentParser(description="PiGoSemiPro")
@@ -139,6 +146,9 @@ def main():
 
     # used by player
     fileToPlay = None
+    
+    #are we aiming? => stream
+    aiming = True
 
     try:
         print "Starting pi powered cam"
@@ -160,14 +170,18 @@ def main():
 
             #has the button been pressed for recording?
             if cameraButton.checkLastPressedState() == cameraButton.ButtonPressStates.SHORTPRESS:
-                #create camera ThreadedCmd
-                cam_options = "-o %s -t 0 -n -w %s -h %s -fps %s" % \
-                            (fileSetupRec(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS)
-                cameraCmd = ThreadedCmd("raspivid", cam_options)
-                #create camera PiCameraControl
-                #cameraCmd = PiCameraControl(fileSetupRec(args.path))
+                #create camera ThreadedCmd - streaming
+                if aiming:
+                    cameraCmd = ThreadedCmd("raspivid", STREAMINGOPTS % (VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS))
+                else:
+                    #create camera ThreadedCmd - recording
+                    cameraCmd = ThreadedCmd("raspivid",
+                                RECORDINGOPTS % (fileSetupRec(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS))
+                    #create camera PiCameraControl
+                    #cameraCmd = PiCameraControl(fileSetupRec(args.path))
                 print "Recording - started pi camera"
                 buttonLoop(cameraCmd, cameraButton)
+                aiming = 1 - aiming
 
             #has the button been pressed for playing?
             elif playerButton.checkLastPressedState() == playerButton.ButtonPressStates.SHORTPRESS:
