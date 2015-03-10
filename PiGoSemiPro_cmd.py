@@ -110,6 +110,8 @@ def buttonLoop(cmd, button):
     #  running -> don't need to stop a stopped thing
     # important: reset button state or camera will start over again
     while (button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED and
+           #try isRunning()?
+           #cmd.isRunning()
            cmd.isAlive()):
         #wait for a bit
         time.sleep(0.2)
@@ -128,16 +130,15 @@ def main():
     PLAYERGPIOPIN = 18
 
     # camera props
-    VIDEOFPS = 12
-    VIDEOHEIGHT = 400
-    VIDEOWIDTH = 600
-#    STREAMINGOPTS = "-o - -t 99999 -hf -w 640 -h 360 -fps 25|\
-#cvlcr stream:///dev/stdin --sout \
-#'#standard{access=http,mux=ts,dst=:8090}' :demux=h264"
+    VIDEOFPS = 25
+    VIDEOHEIGHT = 360
+    VIDEOWIDTH = 640
     STREAMINGOPTS = "-o - -t 99999 -hf -w %s -h %s -fps %s|\
 cvlcr stream:///dev/stdin --sout \
 '#standard{access=http,mux=ts,dst=:8090}' :demux=h264"
     RECORDINGOPTS = "-o %s -t 0 -n -w %s -h %s -fps %s"
+    # hardcoded (obviously) - this will have to be externalized
+    STREAMPLAYOPTIONS = "http://tscloud-y50:8090"
 
     #Command line options
     parser = argparse.ArgumentParser(description="PiGoSemiPro")
@@ -146,9 +147,11 @@ cvlcr stream:///dev/stdin --sout \
 
     # used by player
     fileToPlay = None
-    
+
     #are we aiming? => stream
     aiming = True
+    #do we want to play a stream?
+    playStream = True
 
     try:
         print "Starting pi powered cam"
@@ -172,35 +175,42 @@ cvlcr stream:///dev/stdin --sout \
             if cameraButton.checkLastPressedState() == cameraButton.ButtonPressStates.SHORTPRESS:
                 #create camera ThreadedCmd - streaming
                 if aiming:
-                    cameraCmd = ThreadedCmd("raspivid", STREAMINGOPTS % (VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS))
+                    cameraCmd = ThreadedCmd("raspivid",
+                                STREAMINGOPTS % (VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS))
                 else:
                     #create camera ThreadedCmd - recording
                     cameraCmd = ThreadedCmd("raspivid",
                                 RECORDINGOPTS % (fileSetupRec(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS))
                     #create camera PiCameraControl
                     #cameraCmd = PiCameraControl(fileSetupRec(args.path))
-                print "Recording - started pi camera"
+                print "Recording/camera streaming - started pi camera"
                 buttonLoop(cameraCmd, cameraButton)
                 aiming = 1 - aiming
 
             #has the button been pressed for playing?
             elif playerButton.checkLastPressedState() == playerButton.ButtonPressStates.SHORTPRESS:
-                #create player ThreadedCmd
-                try:
-                    fileToPlay = fileSetupPlay(args.path, fileToPlay)
-                    player_options = "-o hdmi %s" % fileToPlay
-                    playerCmd = ThreadedCmd("omxplayer", player_options)
-                    print "Playing file: %s - started pi player" % fileToPlay
+                if playStream:
+                    #create vnc streamer ThreadedCmd
+                    playerCmd = ThreadedCmd("vncr", STREAMPLAYOPTIONS, 5) #hardcoded - 5 retries
+                    print "Playing stream: %s - started pi player" % STREAMPLAYOPTIONS
                     buttonLoop(playerCmd, playerButton)
-                except NoFilesToPlay:
-                    print "Nothing to play...try recording something"
-                    playerButton.getLastPressedState() # reset button state
-                except AllFilesPlayed:
-                    print "All files played...try recording some more"
-                    playerButton.getLastPressedState() # reset button state
-                except BadFileName as e:
-                    print "Bad file name...what are you trying to play? : %s" % e.filename
-                    playerButton.getLastPressedState() # reset button state
+                else:
+                    #create player ThreadedCmd
+                    try:
+                        fileToPlay = fileSetupPlay(args.path, fileToPlay)
+                        player_options = "-o hdmi %s" % fileToPlay
+                        playerCmd = ThreadedCmd("omxplayer", player_options)
+                        print "Playing file: %s - started pi player" % fileToPlay
+                        buttonLoop(playerCmd, playerButton)
+                    except NoFilesToPlay:
+                        print "Nothing to play...try recording something"
+                        playerButton.getLastPressedState() # reset button state
+                    except AllFilesPlayed:
+                        print "All files played...try recording some more"
+                        playerButton.getLastPressedState() # reset button state
+                    except BadFileName as e:
+                        print "Bad file name...what are you trying to play? : %s" % e.filename
+                        playerButton.getLastPressedState() # reset button state
             else:
                 # have not received button press to start <- is this a good time?
                 time.sleep(0.2)

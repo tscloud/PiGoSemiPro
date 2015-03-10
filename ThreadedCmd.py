@@ -13,9 +13,15 @@ TIMETOWAITFORABORT = 0.5
 #class for controlling the running and shutting down of something (omxplayer for now)
 class ThreadedCmd(threading.Thread):
 
-    def __init__(self, cmd=None, otherOptions=None):
+    def __init__(self, cmd=None, otherOptions=None, retries=1):
         #setup threading - is class inherits from Thread
         threading.Thread.__init__(self)
+
+        self.cmd = cmd
+        self.cmdRetries = retries
+        # if nothing passed in on retries => don't do any retries
+        if retries > 1:
+            self.doRetries = True
 
         #if there are other options, add them
         self.somethingcmd = None
@@ -28,15 +34,25 @@ class ThreadedCmd(threading.Thread):
         self.running = False
 
     def run(self):
-        #run the command
-        print '###\n%s\n###' % self.somethingcmd
-        cmdproc = subprocess.Popen(self.somethingcmd, shell=True,
-                                   stdout=subprocess.PIPE, preexec_fn=os.setsid)
+        for i in range(self.cmdRetries):
+            #run the command
+            print '###\n%s\n###' % self.somethingcmd
+            cmdproc = subprocess.Popen(self.somethingcmd, shell=True,
+                                       stdout=subprocess.PIPE, preexec_fn=os.setsid)
 
-        #loop until its set to stopped or it stops
-        self.running = True
-        while self.running and cmdproc.poll() is None:
-            time.sleep(TIMETOWAITFORABORT)
+            #loop until its set to stopped or it stops
+            self.running = True
+            while self.running and cmdproc.poll() is None:
+                time.sleep(TIMETOWAITFORABORT)
+
+            # if we're running => process must have ended of its own accord => maybe try again
+            if self.running and self.doRetries:
+                print "Tried %s %i times - waiting %i secs - will try %i more times" % \
+                        (self.cmd, i, TIMETOWAITFORABORT*5, self.cmdRetries-i)
+                time.sleep(TIMETOWAITFORABORT*5) # 5 times normal wait
+            else:
+                break
+
         self.running = False
 
         #kill process if still running
@@ -52,7 +68,7 @@ class ThreadedCmd(threading.Thread):
     def stopController(self):
         self.running = False
 
-    def isRunning():
+    def isRunning(self):
         return self.running
 
 #test program
