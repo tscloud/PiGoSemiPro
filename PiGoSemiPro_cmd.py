@@ -173,14 +173,14 @@ cvlcr stream:///dev/stdin --sout \
 
             #has the button been pressed for recording?
             if cameraButton.checkLastPressedState() == cameraButton.ButtonPressStates.SHORTPRESS:
-                #create camera ThreadedCmd - streaming
                 if aiming:
+                    #create camera ThreadedCmd - streaming
                     cameraCmd = ThreadedCmd("raspivid",
-                                STREAMINGOPTS % (VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS))
+                                            STREAMINGOPTS % (VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS))
                 else:
                     #create camera ThreadedCmd - recording
                     cameraCmd = ThreadedCmd("raspivid",
-                                RECORDINGOPTS % (fileSetupRec(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS))
+                                            RECORDINGOPTS % (fileSetupRec(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS))
                     #create camera PiCameraControl
                     #cameraCmd = PiCameraControl(fileSetupRec(args.path))
                 print "Recording/camera streaming - started pi camera"
