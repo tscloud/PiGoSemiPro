@@ -127,7 +127,8 @@ def buttonLoop(cmd, button):
 def main():
     # pin number based on GPIO.setmode(GPIO.BOARD)
     CAMERAGPIOPIN = 12
-    PLAYERGPIOPIN = 18
+    PLAYERGPIOPIN = 18 # <-- change this to not conflict w/ LED pin
+    CAMERALEDGPIOPIN = 18
 
     # camera props
     VIDEOFPS = 25
@@ -139,6 +140,9 @@ cvlcr stream:///dev/stdin --sout \
     RECORDINGOPTS = "-o %s -t 0 -n -w %s -h %s -fps %s"
     # hardcoded (obviously) - this will have to be externalized
     STREAMPLAYOPTIONS = "http://tscloud-y50:8090"
+
+    #set gpio mode
+    GPIO.setmode(GPIO.BOARD)
 
     #Command line options
     parser = argparse.ArgumentParser(description="PiGoSemiPro")
@@ -152,6 +156,10 @@ cvlcr stream:///dev/stdin --sout \
     aiming = True
     #do we want to play a stream?
     playStream = True
+
+    # set camera LED
+    # cameraLed = True
+    # GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=cameraLed)
 
     try:
         print "Starting pi powered cam"

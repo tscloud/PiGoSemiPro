@@ -24,15 +24,12 @@ class ButtonControl(threading.Thread):
         self.longPressTicks = longPressTicks
         self.tickTime = tickTime
 
-        #set gpio mode
-        GPIO.setmode(GPIO.BOARD)
-
         if pressedState == 0:
             pull_value = GPIO.PUD_UP
         else:
             pull_value = GPIO.PUD_DOWN
         GPIO.setup(self.gpioPin, GPIO.IN, pull_up_down=pull_value)
-        
+
         #button properties
         self.running = False
         self.lastPressedState = None
