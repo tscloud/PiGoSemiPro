@@ -7,7 +7,7 @@ import picamera
 from ThreadedCmd import ThreadedCmd
 from ButtonControlPlus import ButtonControlPlus
 from PiCameraControl import PiCameraControl
-import time, argparse, sys, os, traceback
+import time, argparse, sys, os, traceback, ConfigParser
 
 # Custom exceptions - Play
 class NoFilesToPlay(NameError):
@@ -147,19 +147,27 @@ cvlcr stream:///dev/stdin --sout \
     #Command line options
     parser = argparse.ArgumentParser(description="PiGoSemiPro")
     parser.add_argument("path", help="The location of the data directory")
+    parser.add_argument("playstream", default=False, help="shall we stream or simply play to local output")
+    parser.add_argument("showLED", default=True, help="show camera LED or not")
     args = parser.parse_args()
+
+    #build default dict prior to reading config <-- not currently used
+    default_vars = {'FILEPATH':args.path, 'PLAYSTREAM':args.playstream, 'SHOWLED':args.showLED}
+
+    #read config file
+    config = ConfigParser.RawConfigParser()
+    ### I think this is weird -- have to do this to make the options not convert to lowercase
+    config.optionxform = str
+    config.read('.config_pigosemipro.cfg')
 
     # used by player
     fileToPlay = None
 
     #are we aiming? => stream
     aiming = True
-    #do we want to play a stream?
-    playStream = True
 
     # set camera LED
-    # cameraLed = True
-    # GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=cameraLed)
+    # GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=args.showLED)
 
     try:
         print "Starting pi powered cam"
@@ -193,11 +201,12 @@ cvlcr stream:///dev/stdin --sout \
                     #cameraCmd = PiCameraControl(fileSetupRec(args.path))
                 print "Recording/camera streaming - started pi camera"
                 buttonLoop(cameraCmd, cameraButton)
+                # toggle
                 aiming = 1 - aiming
 
             #has the button been pressed for playing?
             elif playerButton.checkLastPressedState() == playerButton.ButtonPressStates.SHORTPRESS:
-                if playStream:
+                if args.playStream:
                     #create vnc streamer ThreadedCmd
                     playerCmd = ThreadedCmd("vncr", STREAMPLAYOPTIONS, 5) #hardcoded - 5 retries
                     print "Playing stream: %s - started pi player" % STREAMPLAYOPTIONS
