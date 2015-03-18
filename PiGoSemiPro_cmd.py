@@ -127,7 +127,7 @@ def buttonLoop(cmd, button):
 def main():
     # pin number based on GPIO.setmode(GPIO.BOARD)
     CAMERAGPIOPIN = 12
-    PLAYERGPIOPIN = 18 # <-- change this to not conflict w/ LED pin
+    PLAYERGPIOPIN = 16 # <-- change this to not conflict w/ LED pin
     CAMERALEDGPIOPIN = 18
 
     # camera props
@@ -146,9 +146,9 @@ cvlcr stream:///dev/stdin --sout \
 
     #Command line options
     parser = argparse.ArgumentParser(description="PiGoSemiPro")
-    parser.add_argument("path", help="The location of the data directory")
-    parser.add_argument("playstream", default=False, help="shall we stream or simply play to local output")
-    parser.add_argument("showLED", default=True, help="show camera LED or not")
+    parser.add_argument("--path", help="The location of the data directory")
+    parser.add_argument("--playstream", action='store_true', help="play stream instead of recording local file")
+    parser.add_argument("--showLED", action='store_false', help="if specified => do NOT show camera LED")
     args = parser.parse_args()
 
     #build default dict prior to reading config <-- not currently used
@@ -167,7 +167,8 @@ cvlcr stream:///dev/stdin --sout \
     aiming = True
 
     # set camera LED
-    # GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=args.showLED)
+    # remember - if specified => do NOT show LED
+    GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=(1-args.showLED))
 
     try:
         print "Starting pi powered cam"
@@ -206,7 +207,7 @@ cvlcr stream:///dev/stdin --sout \
 
             #has the button been pressed for playing?
             elif playerButton.checkLastPressedState() == playerButton.ButtonPressStates.SHORTPRESS:
-                if args.playStream:
+                if args.playstream:
                     #create vnc streamer ThreadedCmd
                     playerCmd = ThreadedCmd("vncr", STREAMPLAYOPTIONS, 5) #hardcoded - 5 retries
                     print "Playing stream: %s - started pi player" % STREAMPLAYOPTIONS

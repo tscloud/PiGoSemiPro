@@ -22,6 +22,8 @@ class ThreadedCmd(threading.Thread):
         # if nothing passed in on retries => don't do any retries
         if retries > 1:
             self.doRetries = True
+        else:
+            self.doRetries = False
 
         #if there are other options, add them
         self.somethingcmd = None
