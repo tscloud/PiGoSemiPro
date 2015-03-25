@@ -144,9 +144,11 @@ def main():
     config.optionxform = str
     config.read('.config_pigosemipro.cfg')
 
-    CAMERAGPIOPIN = config.get('Pins', 'CAMERAGPIOPIN')
-    PLAYERGPIOPIN = config.get('Pins', 'PLAYERGPIOPIN')
-    CAMERALEDGPIOPIN = config.get('Pins', 'CAMERALEDGPIOPIN')
+    CAMERAGPIOPIN = config.get('Pins', 'CAMERAIN')
+    PLAYERGPIOPIN = config.get('Pins', 'PLAYERIN')
+    CAMERALEDGPIOPIN = config.get('Pins', 'CAMERALEDOUT')
+
+    PROGRUNNINGPIN = config.get('Pins', 'PROGRUNNINGLEDOUT')
 
     VIDEOFPS = config.get('CameraOpts', 'VIDEOFPS')
     VIDEOHEIGHT = config.get('CameraOpts', 'VIDEOHEIGHT')
@@ -155,6 +157,10 @@ def main():
     STREAMINGOPTS = config.get('ProcOpts', 'STREAMINGOPTS')
     RECORDINGOPTS = config.get('ProcOpts', 'RECORDINGOPTS')
     STREAMPLAYOPTIONS = config.get('ProcOpts', 'STREAMPLAYOPTIONS')
+
+    # turn on the LED that indicates the prog in running
+    GPIO.setup(PROGRUNNINGPIN, GPIO.OUT)
+    GPIO.output(PROGRUNNINGPIN, GPIO.HIGH)
 
     # used by player
     fileToPlay = None
@@ -257,6 +263,10 @@ def main():
         except:
             print "Unexpected error - ", sys.exc_info()[0], sys.exc_info()[1]
         print "Player Button - Stopped controller"
+
+        # turn off the program running LED
+        GPIO.output(PROGRUNNINGPIN, GPIO.LOW)
+
         #cleanup gpio
         GPIO.cleanup()
         print "Stopped"
