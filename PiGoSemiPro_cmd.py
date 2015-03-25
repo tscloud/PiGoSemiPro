@@ -125,22 +125,6 @@ def buttonLoop(cmd, button):
     print "cmdButton joined..."
 
 def main():
-    # pin number based on GPIO.setmode(GPIO.BOARD)
-    CAMERAGPIOPIN = 12
-    PLAYERGPIOPIN = 16 # <-- change this to not conflict w/ LED pin
-    CAMERALEDGPIOPIN = 18
-
-    # camera props
-    VIDEOFPS = 25
-    VIDEOHEIGHT = 360
-    VIDEOWIDTH = 640
-    STREAMINGOPTS = "-o - -t 99999 -hf -w %s -h %s -fps %s|\
-cvlcr stream:///dev/stdin --sout \
-'#standard{access=http,mux=ts,dst=:8090}' :demux=h264"
-    RECORDINGOPTS = "-o %s -t 0 -n -w %s -h %s -fps %s"
-    # hardcoded (obviously) - this will have to be externalized
-    STREAMPLAYOPTIONS = "http://tscloud-y50:8090"
-
     #set gpio mode
     GPIO.setmode(GPIO.BOARD)
 
@@ -159,6 +143,18 @@ cvlcr stream:///dev/stdin --sout \
     ### I think this is weird -- have to do this to make the options not convert to lowercase
     config.optionxform = str
     config.read('.config_pigosemipro.cfg')
+
+    CAMERAGPIOPIN = config.get('Pins', 'CAMERAGPIOPIN')
+    PLAYERGPIOPIN = config.get('Pins', 'PLAYERGPIOPIN')
+    CAMERALEDGPIOPIN = config.get('Pins', 'CAMERALEDGPIOPIN')
+
+    VIDEOFPS = config.get('CameraOpts', 'VIDEOFPS')
+    VIDEOHEIGHT = config.get('CameraOpts', 'VIDEOHEIGHT')
+    VIDEOWIDTH = config.get('CameraOpts', 'VIDEOWIDTH')
+
+    STREAMINGOPTS = config.get('ProcOpts', 'STREAMINGOPTS')
+    RECORDINGOPTS = config.get('ProcOpts', 'RECORDINGOPTS')
+    STREAMPLAYOPTIONS = config.get('ProcOpts', 'STREAMPLAYOPTIONS')
 
     # used by player
     fileToPlay = None
