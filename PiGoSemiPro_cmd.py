@@ -164,7 +164,11 @@ def main():
 
     # set camera LED
     # remember - if specified => do NOT show LED
-    GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=(1-args.showLED))
+    initialLED = GPIO.LOW
+    if args.showLED:
+        initialLED = GPIO.HIGH
+
+    GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=(initialLED))
 
     try:
         print "Starting pi powered cam"
