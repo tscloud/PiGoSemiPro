@@ -144,11 +144,11 @@ def main():
     config.optionxform = str
     config.read('.config_pigosemipro.cfg')
 
-    CAMERAGPIOPIN = config.get('Pins', 'CAMERAIN')
-    PLAYERGPIOPIN = config.get('Pins', 'PLAYERIN')
-    CAMERALEDGPIOPIN = config.get('Pins', 'CAMERALEDOUT')
+    CAMERAGPIOPIN = config.getint('Pins', 'CAMERAIN')
+    PLAYERGPIOPIN = config.getint('Pins', 'PLAYERIN')
+    CAMERALEDGPIOPIN = config.getint('Pins', 'CAMERALEDOUT')
 
-    PROGRUNNINGPIN = config.get('Pins', 'PROGRUNNINGLEDOUT')
+    PROGRUNNINGPIN = config.getint('Pins', 'PROGRUNNINGLEDOUT')
 
     VIDEOFPS = config.get('CameraOpts', 'VIDEOFPS')
     VIDEOHEIGHT = config.get('CameraOpts', 'VIDEOHEIGHT')
@@ -158,23 +158,18 @@ def main():
     RECORDINGOPTS = config.get('ProcOpts', 'RECORDINGOPTS')
     STREAMPLAYOPTIONS = config.get('ProcOpts', 'STREAMPLAYOPTIONS')
 
-    # turn on the LED that indicates the prog in running
-    GPIO.setup(PROGRUNNINGPIN, GPIO.OUT)
-    GPIO.output(PROGRUNNINGPIN, GPIO.HIGH)
-
     # used by player
     fileToPlay = None
 
     #are we aiming? => stream
     aiming = True
 
+    # turn on the LED that indicates the prog in running
+    GPIO.setup(PROGRUNNINGPIN, GPIO.OUT, initial=GPIO.HIGH)
+
     # set camera LED
     # remember - if specified => do NOT show LED
-    initialLED = GPIO.LOW
-    if args.showLED:
-        initialLED = GPIO.HIGH
-
-    GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=(initialLED))
+    GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=(1-args.showLED))
 
     try:
         print "Starting pi powered cam"
