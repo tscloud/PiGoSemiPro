@@ -136,7 +136,7 @@ def main():
     args = parser.parse_args()
 
     #build default dict prior to reading config <-- not currently used
-    default_vars = {'FILEPATH':args.path, 'PLAYSTREAM':args.playstream, 'SHOWLED':args.showLED}
+    default_vars = {'FILEPATH':args.path, 'PLAYSTREAM':args.playstream, 'SHOWLED':args.noshowLED}
 
     #read config file
     config = ConfigParser.RawConfigParser()
@@ -169,7 +169,7 @@ def main():
 
     # set camera LED
     # remember - if specified => do NOT show LED
-    GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=(args.showLED))
+    GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=(args.noshowLED))
 
     try:
         print "Starting pi powered cam"

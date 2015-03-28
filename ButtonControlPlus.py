@@ -10,9 +10,8 @@ class ButtonControlPlus(ButtonControl):
         BUTTONSHORTPRESSTICKS = 5
         BUTTONLONGPRESSTICKS = 200
         BUTTONTICKTIME = 0.01
-        # defaulting to pin high <- good to do here?
-        #  => pressed state will be low
-        BUTTONPRESSEDSTATE = 1
+        # good to do here?
+        BUTTONPRESSEDSTATE = 0
 
         super(ButtonControlPlus, self).__init__(gpioPin, BUTTONPRESSEDSTATE,
                                                BUTTONSHORTPRESSTICKS, BUTTONLONGPRESSTICKS,
