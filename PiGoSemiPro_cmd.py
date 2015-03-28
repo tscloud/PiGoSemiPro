@@ -132,7 +132,7 @@ def main():
     parser = argparse.ArgumentParser(description="PiGoSemiPro")
     parser.add_argument("--path", help="The location of the data directory")
     parser.add_argument("--playstream", action='store_true', help="play stream instead of recording local file")
-    parser.add_argument("--showLED", action='store_false', help="if specified => do NOT show camera LED")
+    parser.add_argument("--noshowLED", action='store_false', help="if specified => do NOT show camera LED")
     args = parser.parse_args()
 
     #build default dict prior to reading config <-- not currently used
@@ -169,7 +169,7 @@ def main():
 
     # set camera LED
     # remember - if specified => do NOT show LED
-    GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=(1-args.showLED))
+    GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=(args.showLED))
 
     try:
         print "Starting pi powered cam"
