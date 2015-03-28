@@ -165,7 +165,9 @@ def main():
     aiming = True
 
     # turn on the LED that indicates the prog in running
-    GPIO.setup(PROGRUNNINGPIN, GPIO.OUT, initial=GPIO.HIGH)
+    GPIO.setup(PROGRUNNINGPIN, GPIO.OUT)
+    GPIO.output(PROGRUNNINGPIN, GPIO.HIGH)
+    print "LED: %i should be %i" % (PROGRUNNINGPIN, GPIO.HIGH)
 
     # set camera LED
     # remember - if specified => do NOT show LED
