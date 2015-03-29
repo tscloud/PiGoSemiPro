@@ -97,7 +97,7 @@ def fileSetupPlay(path, lastFilePlayed):
 
     return now_fname
 
-def buttonLoop(cmd, button):
+def buttonLoop(cmd, button, fsCheckFile=None):
     """perform a loop around a CommandButton"""
     #get the last pressed state of the button and reset it
     button.getLastPressedState()
@@ -105,16 +105,25 @@ def buttonLoop(cmd, button):
     #start the command
     cmd.start()
 
+    #used for sleeping & fs checking
+    sleepTime = 0.2
+    sleepsBeforeFSCheck = 5
+    fsCheckCnt = 0
+
     # wait for the button to be pressed
     # should check to see if the thing you are trying to stop is still
     #  running -> don't need to stop a stopped thing
     # important: reset button state or camera will start over again
-    while (button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED and
-           #try isRunning()?
-           #cmd.isRunning()
-           cmd.isAlive()):
+    while button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED and cmd.isAlive():
+        if fsCheckFile != None: # maybe check filesystem...
+            if fsCheckCnt == sleepsBeforeFSCheck: # ...but not every time
+                fsCheckCnt = 0
+                if freeSpaceCheck(fsCheckFile):
+                    break
+            else:
+                fsCheckCnt += 1
         #wait for a bit
-        time.sleep(0.2)
+        time.sleep(sleepTime)
 
     #stop the button
     print "Stopping command controller"
@@ -123,6 +132,15 @@ def buttonLoop(cmd, button):
     #wait for the tread to finish if it hasn't already
     cmd.join()
     print "cmdButton joined..."
+
+def freeSpaceCheck(checkFile):
+    """check for filesyatem freespace and possiblly stop things if we're running low"""
+
+    disk = os.statvfs(checkFile)
+    totalAvailSpace = float(disk.f_bsize*disk.f_bfree)
+    print "available space: %.2f MBytes" % (totalAvailSpace/1024/1024)
+
+    return False
 
 def main():
     #set gpio mode
@@ -204,7 +222,7 @@ def main():
                     #create camera PiCameraControl
                     #cameraCmd = PiCameraControl(fileSetupRec(args.path))
                 print "Recording/camera streaming - started pi camera"
-                buttonLoop(cameraCmd, cameraButton)
+                buttonLoop(cameraCmd, cameraButton, fileSetupRec(args.path))
                 # toggle
                 aiming = 1 - aiming
 
