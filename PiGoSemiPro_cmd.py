@@ -211,18 +211,21 @@ def main():
 
             #has the button been pressed for recording?
             if cameraButton.checkLastPressedState() == cameraButton.ButtonPressStates.SHORTPRESS:
+                #extra arg (maybe) to butonLoop
+                vidFile = None
                 if aiming:
                     #create camera ThreadedCmd - streaming
                     cameraCmd = ThreadedCmd("raspivid",
                                             STREAMINGOPTS % (VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS))
                 else:
                     #create camera ThreadedCmd - recording
+                    vidFile = fileSetupRec(args.path)
                     cameraCmd = ThreadedCmd("raspivid",
                                             RECORDINGOPTS % (fileSetupRec(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS))
                     #create camera PiCameraControl
                     #cameraCmd = PiCameraControl(fileSetupRec(args.path))
                 print "Recording/camera streaming - started pi camera"
-                buttonLoop(cameraCmd, cameraButton, fileSetupRec(args.path))
+                buttonLoop(cameraCmd, cameraButton, vidFile)
                 # toggle
                 aiming = 1 - aiming
 
