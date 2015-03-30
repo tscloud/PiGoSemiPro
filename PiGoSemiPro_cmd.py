@@ -101,10 +101,10 @@ def buttonLoop(cmd, button, fsCheckFile=None, fsThresh=0):
     """perform a loop around a CommandButton"""
     #get the last pressed state of the button and reset it
     button.getLastPressedState()
-    
-    #start the command...but check to see if we have space 1st
+
+    #start the command...
     cmd.start()
-    
+
     #used for sleeping & fs checking
     sleepTime = 0.2
     sleepsBeforeFSCheck = 20
@@ -136,14 +136,14 @@ def buttonLoop(cmd, button, fsCheckFile=None, fsThresh=0):
 def freeSpaceCheck(checkFile, thresh):
     """check for filesyatem freespace and possiblly stop things if we're running low"""
     letsQuit = False
-    
+
     print "checking: %s" % checkFile
     if os.path.isfile(checkFile) or os.path.isdir(checkFile):
         disk = os.statvfs(checkFile)
         totalAvailSpace = float(disk.f_bsize*disk.f_bfree)
         checkSpace = totalAvailSpace/1024/1024
         print "available space: %.2f MBytes" % (checkSpace)
-        
+
         if thresh != 0 and checkSpace < thresh:
             print "Sorry...no more space"
             letsQuit = True
@@ -152,7 +152,7 @@ def freeSpaceCheck(checkFile, thresh):
     else:
         print "filename given not a file"
         letsQuit = True
-    
+
     return letsQuit
 
 def main():
@@ -223,9 +223,9 @@ def main():
         while (cameraButton.checkLastPressedState() != cameraButton.ButtonPressStates.LONGPRESS and
                playerButton.checkLastPressedState() != cameraButton.ButtonPressStates.LONGPRESS):
 
-            #has the button been pressed for recording?
+            #has the --BUTTON-- been pressed for --RECORDING--?
             if cameraButton.checkLastPressedState() == cameraButton.ButtonPressStates.SHORTPRESS:
-                #extra arg (maybe) to butonLoop
+                #extra arg (maybe) to buttonLoop
                 vidFile = None
                 if aiming:
                     #create camera ThreadedCmd - streaming
@@ -234,7 +234,7 @@ def main():
                 else:
                     #create camera ThreadedCmd - recording
                     vidFile = fileSetupRec(args.path)
-                    #don't record if we don't have space
+                    #...but don't record if we don't have space
                     if freeSpaceCheck(os.path.dirname(vidFile), config.getint('OtherOpts', 'SPACETHRESH')):
                         #get the last pressed state of the button and reset it
                         cameraButton.getLastPressedState()
@@ -248,7 +248,7 @@ def main():
                 # toggle
                 aiming = 1 - aiming
 
-            #has the button been pressed for playing?
+            #has the --BUTTON-- been pressed for --PLAYING--?
             elif playerButton.checkLastPressedState() == playerButton.ButtonPressStates.SHORTPRESS:
                 if args.playstream:
                     #create vnc streamer ThreadedCmd
