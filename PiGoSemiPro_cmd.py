@@ -97,17 +97,17 @@ def fileSetupPlay(path, lastFilePlayed):
 
     return now_fname
 
-def buttonLoop(cmd, button, fsCheckFile=None):
+def buttonLoop(cmd, button, fsCheckFile=None, fsThresh=0):
     """perform a loop around a CommandButton"""
     #get the last pressed state of the button and reset it
     button.getLastPressedState()
-
-    #start the command
+    
+    #start the command...but check to see if we have space 1st
     cmd.start()
-
+    
     #used for sleeping & fs checking
     sleepTime = 0.2
-    sleepsBeforeFSCheck = 5
+    sleepsBeforeFSCheck = 20
     fsCheckCnt = 0
 
     # wait for the button to be pressed
@@ -115,13 +115,13 @@ def buttonLoop(cmd, button, fsCheckFile=None):
     #  running -> don't need to stop a stopped thing
     # important: reset button state or camera will start over again
     while button.getLastPressedState() == button.ButtonPressStates.NOTPRESSED and cmd.isAlive():
-        if fsCheckFile != None: # maybe check filesystem...
-            if fsCheckCnt == sleepsBeforeFSCheck: # ...but not every time
-                fsCheckCnt = 0
-                if freeSpaceCheck(fsCheckFile):
-                    break
-            else:
-                fsCheckCnt += 1
+        # maybe check filesystem...but not every time
+        if fsCheckFile != None and fsCheckCnt == sleepsBeforeFSCheck:
+            fsCheckCnt = 0
+            if freeSpaceCheck(fsCheckFile, fsThresh):
+                break
+        else:
+            fsCheckCnt += 1
         #wait for a bit
         time.sleep(sleepTime)
 
@@ -133,16 +133,30 @@ def buttonLoop(cmd, button, fsCheckFile=None):
     cmd.join()
     print "cmdButton joined..."
 
-def freeSpaceCheck(checkFile):
+def freeSpaceCheck(checkFile, thresh):
     """check for filesyatem freespace and possiblly stop things if we're running low"""
-
-    disk = os.statvfs(checkFile)
-    totalAvailSpace = float(disk.f_bsize*disk.f_bfree)
-    print "available space: %.2f MBytes" % (totalAvailSpace/1024/1024)
-
-    return False
+    letsQuit = False
+    
+    print "checking: %s" % checkFile
+    if os.path.isfile(checkFile) or os.path.isdir(checkFile):
+        disk = os.statvfs(checkFile)
+        totalAvailSpace = float(disk.f_bsize*disk.f_bfree)
+        checkSpace = totalAvailSpace/1024/1024
+        print "available space: %.2f MBytes" % (checkSpace)
+        
+        if thresh != 0 and checkSpace < thresh:
+            print "Sorry...no more space"
+            letsQuit = True
+        else:
+            letsQuit = False
+    else:
+        print "filename given not a file"
+        letsQuit = True
+    
+    return letsQuit
 
 def main():
+    """it's the main...duh"""
     #set gpio mode
     GPIO.setmode(GPIO.BOARD)
 
@@ -220,12 +234,17 @@ def main():
                 else:
                     #create camera ThreadedCmd - recording
                     vidFile = fileSetupRec(args.path)
+                    #don't record if we don't have space
+                    if freeSpaceCheck(os.path.dirname(vidFile), config.getint('OtherOpts', 'SPACETHRESH')):
+                        #get the last pressed state of the button and reset it
+                        cameraButton.getLastPressedState()
+                        continue
                     cameraCmd = ThreadedCmd("raspivid",
                                             RECORDINGOPTS % (fileSetupRec(args.path), VIDEOWIDTH, VIDEOHEIGHT, VIDEOFPS))
                     #create camera PiCameraControl
                     #cameraCmd = PiCameraControl(fileSetupRec(args.path))
                 print "Recording/camera streaming - started pi camera"
-                buttonLoop(cameraCmd, cameraButton, vidFile)
+                buttonLoop(cameraCmd, cameraButton, vidFile, config.getint('OtherOpts', 'SPACETHRESH'))
                 # toggle
                 aiming = 1 - aiming
 

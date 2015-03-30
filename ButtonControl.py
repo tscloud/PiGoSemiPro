@@ -60,7 +60,7 @@ class ButtonControl(threading.Thread):
         while self.running:
             # wait for the button to be pressed
             # Use GPIO.wait_for_edge(channel, GPIO.FALLING) here? <= NO
-            # need to poll to check if we ot the stop command
+            # need to poll to check if we got the stop command
             while self.pressed() == False and self.running:
                 time.sleep(self.tickTime)
 
@@ -68,7 +68,7 @@ class ButtonControl(threading.Thread):
             ticks = 0
             # wait for the button to be released
             # Use GPIO.wait_for_edge(channel, GPIO.RISING) here? <= NO
-            # need to poll to check if we ot the stop command
+            # need to poll to check if we got the stop command
             while self.pressed() == True and self.running:
                 ticks += 1
                 time.sleep(self.tickTime)
