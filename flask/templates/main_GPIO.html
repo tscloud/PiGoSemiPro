@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <head>
-   <title>Current Status</title>
+   <title>PiGoSemiPro Web</title>
 </head>
 
 <body>
-   <h1>Device Listing and Status</h1>
+   <h1>PiGoSemiPro - possible actions</h1>
 
    {% for pin in pins %}
-   <p>The {{ pins[pin].name }}
-   {% if pins[pin].state == true %}
-      is currently on (<a href="/{{pin}}/off">turn off</a>)
-   {% else %}
-      is currently off (<a href="/{{pin}}/on">turn on</a>)
-   {% endif %}
+   <p>
+   <FORM>
+      <INPUT TYPE="button" onClick="parent.location='/{{pin}}/toggle'" VALUE="{{ pins[pin].name }}">
+   </FORM>   
    </p>
    {% endfor %}
 

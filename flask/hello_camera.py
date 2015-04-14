@@ -1,9 +1,7 @@
-import RPi.GPIO as GPIO
 import ConfigParser, time
 from flask import Flask, render_template
+from collections import OrderedDict
 app = Flask(__name__)
-
-GPIO.setmode(GPIO.BOARD)
 
 #read config file
 config = ConfigParser.RawConfigParser()
@@ -13,20 +11,14 @@ config.optionxform = str
 config.read('..\\.config_pigosemipro.cfg')
 
 # Create a dictionary called pins to store the pin number, name, and pin state:
-pins = {
-    config.getint('Pins', 'CAMERAOUT') : {'name' : 'camera button', 'state' : GPIO.HIGH},
-    config.getint('Pins', 'PLAYEROUT') : {'name' : 'player button', 'state' : GPIO.HIGH},
-    config.getint('Pins', 'PROGRUNNINGLEDOUT') : {'name' : 'running light', 'state' : GPIO.LOW}
-    }
-
-# Set each pin
-for pin in pins:
-    GPIO.setup(pin, GPIO.OUT)
-    GPIO.output(pin, pins[pin]['state'])
+pins = OrderedDict()
+pins[config.getint('Pins', 'CAMERAOUT')] = {'name' : 'camera button', 'state' : 1}
+pins[config.getint('Pins', 'PLAYEROUT')] = {'name' : 'player button', 'state' : 1}
+pins[config.getint('Pins', 'PROGRUNNINGLEDOUT')] = {'name' : 'running light', 'state' : 0}
+print 'pins dict: %s' % pins
 
 @app.route("/")
 def main():
-    # Put the pin dictionary into the template data dictionary:
     templateData = {
         'pins' : pins
         }
@@ -42,9 +34,7 @@ def action(changePin):
     deviceName = pins[changePin]['name']
     # simulate button press
     # Read the pin and set it to whatever it isn't (that is, toggle it) and then set it back:
-    GPIO.output(changePin, not GPIO.input(changePin))
     time.sleep(0.2)
-    GPIO.output(changePin, not GPIO.input(changePin))
     message = "Toggled " + deviceName + "."
 
     # Along with the pin dictionary, put the message into the template data dictionary:

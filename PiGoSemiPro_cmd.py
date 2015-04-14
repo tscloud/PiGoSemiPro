@@ -178,9 +178,9 @@ def main():
 
     CAMERAGPIOPIN = config.getint('Pins', 'CAMERAIN')
     PLAYERGPIOPIN = config.getint('Pins', 'PLAYERIN')
-    CAMERALEDGPIOPIN = config.getint('Pins', 'CAMERALEDOUT')
+    CAMERALEDGPIOPOUT = config.getint('Pins', 'CAMERALEDOUT')
 
-    PROGRUNNINGPIN = config.getint('Pins', 'PROGRUNNINGLEDOUT')
+    PROGRUNNINGPOUT = config.getint('Pins', 'PROGRUNNINGLEDOUT')
 
     VIDEOFPS = config.get('CameraOpts', 'VIDEOFPS')
     VIDEOHEIGHT = config.get('CameraOpts', 'VIDEOHEIGHT')
@@ -197,13 +197,13 @@ def main():
     aiming = True
 
     # turn on the LED that indicates the prog in running
-    GPIO.setup(PROGRUNNINGPIN, GPIO.OUT)
-    GPIO.output(PROGRUNNINGPIN, GPIO.HIGH)
-    print "LED: %i should be %i" % (PROGRUNNINGPIN, GPIO.HIGH)
+    GPIO.setup(PROGRUNNINGPOUT, GPIO.OUT)
+    GPIO.output(PROGRUNNINGPOUT, GPIO.HIGH)
+    print "LED: %i should be %i" % (PROGRUNNINGPOUT, GPIO.HIGH)
 
     # set camera LED
     # remember - if specified => do NOT show LED
-    GPIO.setup(CAMERALEDGPIOPIN, GPIO.OUT, initial=(args.noshowLED))
+    GPIO.setup(CAMERALEDGPIOPOUT, GPIO.OUT, initial=(args.noshowLED))
 
     try:
         print "Starting pi powered cam"
@@ -302,7 +302,7 @@ def main():
         print "Player Button - Stopped controller"
 
         # turn off the program running LED
-        GPIO.output(PROGRUNNINGPIN, GPIO.LOW)
+        GPIO.output(PROGRUNNINGPOUT, GPIO.LOW)
 
         #cleanup gpio
         GPIO.cleanup()
