@@ -52,7 +52,7 @@ def fileSetupRec(path):
 
     return now_fname
 
-def fileSetupPlay(path, lastFilePlayed):
+def fileSetupPlay(path, fileTup):
     """
     look for file w/ highest "nnnn" and return
     if file passed in => decrement and return that file
@@ -61,13 +61,13 @@ def fileSetupPlay(path, lastFilePlayed):
     """
     now_fname = None
 
-    if lastFilePlayed != None:
+    if fileTup[0] != None:
         try:
-            print "lastFilePlayed: %s" % lastFilePlayed
-            print "nnnn: %s" % lastFilePlayed[6:10]
-            n = int(lastFilePlayed[6:10])
+            print "lastFilePlayed: %s" % fileTup[0]
+            print "nnnn: %s" % fileTup[0][6:10]
+            n = int(fileTup[0][6:10])
         except ValueError:
-            raise BadFileName(lastFilePlayed)
+            raise BadFileName(fileTup[0])
 
         n = n-1
         if n <= 0:
@@ -79,7 +79,7 @@ def fileSetupPlay(path, lastFilePlayed):
 
     if not now_fname:
         past_fnames = next(os.walk(path))[2]
-        f_nums = []
+        f_nums = [] # this is the list number parts of the files of interest
         for f in past_fnames:
             if f.startswith('semi'):
                 f_nums.append(int(f[4:8]))
@@ -88,6 +88,7 @@ def fileSetupPlay(path, lastFilePlayed):
             raise NoFilesToPlay()
         elif n == 0:
             now_fname = '/semi%04d.h264' % (max(f_nums))
+            first_fname = now_fname
         else:
             now_fname = '/semi%04d.h264' % (n)
 
@@ -95,7 +96,7 @@ def fileSetupPlay(path, lastFilePlayed):
 
     print 'Current play name: %s' % now_fname
 
-    return now_fname
+    return (now_fname, first_fname)
 
 def buttonLoop(cmd, button, fsCheckFile=None, fsThresh=0):
     """perform a loop around a CommandButton"""
@@ -191,7 +192,7 @@ def main():
     STREAMPLAYOPTIONS = config.get('ProcOpts', 'STREAMPLAYOPTIONS')
 
     # used by player
-    fileToPlay = None
+    playFiles = None
 
     #are we aiming? => stream
     aiming = True
@@ -258,10 +259,10 @@ def main():
                 else:
                     #create player ThreadedCmd
                     try:
-                        fileToPlay = fileSetupPlay(args.path, fileToPlay)
-                        player_options = "-o hdmi %s" % fileToPlay
+                        playFiles = fileSetupPlay(args.path, playFiles)
+                        player_options = "-o hdmi %s" % playFiles[0]
                         playerCmd = ThreadedCmd("omxplayer", player_options)
-                        print "Playing file: %s - started pi player" % fileToPlay
+                        print "Playing file: %s - started pi player" % playFiles[0]
                         buttonLoop(playerCmd, playerButton)
                     except NoFilesToPlay:
                         print "Nothing to play...try recording something"
