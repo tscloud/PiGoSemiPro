@@ -1,6 +1,10 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
 import RPi.GPIO as GPIO
 import ConfigParser, time
 from flask import Flask, render_template
+from collections import OrderedDict
 app = Flask(__name__)
 
 GPIO.setmode(GPIO.BOARD)
@@ -10,14 +14,13 @@ config = ConfigParser.RawConfigParser()
 ### I think this is weird -- have to do this to make the options not convert to lowercase
 config.optionxform = str
 # hardcoded - not sure how to pass/set config file
-config.read('..\\.config_pigosemipro.cfg')
+config.read('../.config_pigosemipro.cfg')
 
 # Create a dictionary called pins to store the pin number, name, and pin state:
-pins = {
-    config.getint('Pins', 'CAMERAOUT') : {'name' : 'camera button', 'state' : GPIO.HIGH},
-    config.getint('Pins', 'PLAYEROUT') : {'name' : 'player button', 'state' : GPIO.HIGH},
-    config.getint('Pins', 'PROGRUNNINGLEDOUT') : {'name' : 'running light', 'state' : GPIO.LOW}
-    }
+pins = OrderedDict()
+pins[config.getint('Pins', 'CAMERAOUT')] = {'name' : 'camera button', 'state' : GPIO.HIGH}
+pins[config.getint('Pins', 'PLAYEROUT')] = {'name' : 'player button', 'state' : GPIO.HIGH}
+# pins[config.getint('Pins', 'PROGRUNNINGLEDOUT')] = {'name' : 'running light', 'state' : GPIO.LOW}
 
 # Set each pin
 for pin in pins:
