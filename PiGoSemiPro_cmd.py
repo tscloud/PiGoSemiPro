@@ -52,31 +52,36 @@ def fileSetupRec(path):
 
     return now_fname
 
-def fileSetupPlay(path, fileTup):
+def fileSetupPlay(path, playFiles):
     """
     look for file w/ highest "nnnn" and return
     if file passed in => decrement and return that file
+    but 1st check toi see if any file created in the meantime
     file name convention: seminnnn.h264
     nnnn = 0001, 0002, etc.
     """
     now_fname = None
 
-    if fileTup[0] != None:
+    #we've played a file already...play the next if we can
+    if playFiles[0] != None:
         try:
-            print "lastFilePlayed: %s" % fileTup[0]
-            print "nnnn: %s" % fileTup[0][6:10]
-            n = int(fileTup[0][6:10])
+            print "lastFilePlayed: %s" % playFiles[0]
+            print "nnnn: %s" % playFiles[0][6:10]
+            n = int(playFiles[0][6:10])
         except ValueError:
-            raise BadFileName(fileTup[0])
+            raise BadFileName(playFiles[0])
 
         n = n-1
         if n <= 0:
             # raise AllFilesPlayed()
             # recursion - start list from the beginning
             now_fname = fileSetupPlay(path, None)
+    #this means we're starting fresh
     else:
         n = 0
 
+    #if now_fname set => we've done the recursive call and are starting at the top
+    # and are all set
     if not now_fname:
         past_fnames = next(os.walk(path))[2]
         f_nums = [] # this is the list number parts of the files of interest
@@ -84,19 +89,19 @@ def fileSetupPlay(path, fileTup):
             if f.startswith('semi'):
                 f_nums.append(int(f[4:8]))
 
-        if not f_nums:
+        if not f_nums: # no files
             raise NoFilesToPlay()
-        elif n == 0:
+        elif n == 0: # start from beginning
             now_fname = '/semi%04d.h264' % (max(f_nums))
             first_fname = now_fname
-        else:
+        else: # give me the next
             now_fname = '/semi%04d.h264' % (n)
 
         now_fname = path+now_fname
 
     print 'Current play name: %s' % now_fname
 
-    return (now_fname, first_fname)
+    return [now_fname, first_fname]
 
 def buttonLoop(cmd, button, fsCheckFile=None, fsThresh=0):
     """perform a loop around a CommandButton"""
