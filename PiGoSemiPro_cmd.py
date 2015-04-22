@@ -60,34 +60,35 @@ def fileSetupPlay(path, playFiles):
     file name convention: seminnnn.h264
     nnnn = 0001, 0002, etc.
     """
-    now_fname = []
+    recurseResult = []
 
-    #we've played a file already...play the next if we can
+    #if we've played a file already...play the next if we can
     if playFiles != None:
-        first_fname = playFiles[1]
-        if playFiles[0] != None:
+        lastFilePlayed = playFiles[0]
+        firstFilePlayed = playFiles[1]
+        if lastFilePlayed != None:
             try:
-                print 'lastFilePlayed: %s' % playFiles[0]
-                print 'nnnn: %s' % playFiles[0][6:10]
-                n = int(playFiles[0][6:10])
+                print 'lastFilePlayed: %s' % lastFilePlayed
+                print 'nnnn: %s' % lastFilePlayed[6:10]
+                n = int(lastFilePlayed[6:10])
             except ValueError:
-                raise BadFileName(playFiles[0])
+                raise BadFileName(lastFilePlayed)
 
             n = n-1
 
             # recursion - start list from the beginning
             #  do this check everytime to see if there are any new files
-            now_fname = fileSetupPlay(path, None)
-            print 'highestFile: %s' % now_fname[0]
+            recurseResult = fileSetupPlay(path, None)
+            print 'highestFile: %s' % recurseResult[0]
 
             if n <= 0: # we played everything => start from beginning
                 # raise AllFilesPlayed()
                 pass
             else:
                 # check to see if there are any new files
-                print 'firstFilePlayed: %s' % first_fname
-                if now_fname[0] == first_fname:
-                    now_fname[0] = []
+                print 'firstFilePlayed: %s' % firstFilePlayed
+                if recurseResult[0] == firstFilePlayed:
+                    recurseResult = []
 
         #this means we're starting fresh
         else:
@@ -96,10 +97,11 @@ def fileSetupPlay(path, playFiles):
     else:
         n = 0
 
-    #if now_fname set => we're starting at the top and are all set
-    if now_fname == []:
+    play_this = None
+    #if recurseResult set => we're starting at the top and are all set
+    if recurseResult == []:
         past_fnames = next(os.walk(path))[2]
-        f_nums = [] # this is the list number parts of the files of interest
+        f_nums = [] # this is the list of number parts of the files of interest
         for f in past_fnames:
             if f.startswith('semi'):
                 f_nums.append(int(f[4:8]))
@@ -107,16 +109,17 @@ def fileSetupPlay(path, playFiles):
         if not f_nums: # no files
             raise NoFilesToPlay()
         elif n == 0: # start from beginning
-            now_fname.append('/semi%04d.h264' % (max(f_nums)))
-            first_fname = now_fname[0]
+            play_this = path+'/semi%04d.h264' % max(f_nums)
+            firstFilePlayed = play_this
         else: # give me the next
-            now_fname.append('/semi%04d.h264' % (n))
+            play_this = path+'/semi%04d.h264' % n
+    else:
+        play_this = recurseResult[0]
+        firstFilePlayed = recurseResult[1]
 
-        now_fname[0] = path+now_fname[0]
+    print 'Current play name: %s' % play_this
 
-    print 'Current play name: %s' % now_fname[0]
-
-    return [now_fname[0], first_fname]
+    return [play_this, firstFilePlayed]
 
 def buttonLoop(cmd, button, fsCheckFile=None, fsThresh=0):
     """perform a loop around a CommandButton"""
