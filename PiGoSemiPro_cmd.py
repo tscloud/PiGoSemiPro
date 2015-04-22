@@ -65,23 +65,33 @@ def fileSetupPlay(path, playFiles):
     #we've played a file already...play the next if we can
     if playFiles[0] != None:
         try:
-            print "lastFilePlayed: %s" % playFiles[0]
-            print "nnnn: %s" % playFiles[0][6:10]
+            print 'lastFilePlayed: %s' % playFiles[0]
+            print 'nnnn: %s' % playFiles[0][6:10]
             n = int(playFiles[0][6:10])
         except ValueError:
             raise BadFileName(playFiles[0])
 
         n = n-1
-        if n <= 0:
+
+        # recursion - start list from the beginning
+        #  do this check everytime to see if there are any new files
+        now_fname = fileSetupPlay(path, None)
+        print 'highestFile: %s' % now_fname
+
+        if n <= 0: # we played everything => start from beginning
             # raise AllFilesPlayed()
-            # recursion - start list from the beginning
-            now_fname = fileSetupPlay(path, None)
+            pass
+        else:
+            # check to see if there are any new files
+            print 'firstFilePlayed: %s' % now_fname
+            if now_fname > playFiles[1]:
+                now_fname = playFiles[1]
+
     #this means we're starting fresh
     else:
         n = 0
 
-    #if now_fname set => we've done the recursive call and are starting at the top
-    # and are all set
+    #if now_fname set => we're starting at the top and are all set
     if not now_fname:
         past_fnames = next(os.walk(path))[2]
         f_nums = [] # this is the list number parts of the files of interest
