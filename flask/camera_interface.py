@@ -46,7 +46,7 @@ def action(changePin):
     # simulate button press
     # Read the pin and set it to whatever it isn't (that is, toggle it) and then set it back:
     GPIO.output(changePin, not GPIO.input(changePin))
-    time.sleep(0.2)
+    time.sleep(1.2)
     GPIO.output(changePin, not GPIO.input(changePin))
     message = "Toggled " + deviceName + "."
 
