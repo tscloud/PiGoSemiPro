@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import RPi.GPIO as GPIO
-import ConfigParser, time
+import ConfigParser, time, os
 from flask import Flask, render_template
 from collections import OrderedDict
 app = Flask(__name__)
@@ -56,6 +56,21 @@ def action(changePin):
         'pins' : pins
     }
 
+    return render_template('main_GPIO.html', **templateData)
+
+# The function below is executed when someone requests a URL with the pin number and action in it:
+@app.route("/start")
+def startCam():
+    #start the cam
+    camCmd = os.popen('service wicd status')
+    camPid = camCmd.read()
+    
+    # Put the message into the template data dictionary, still need to send the pins:
+    templateData = {
+        'message' : 'Hopefully PiGoSemiPro started...%s' % camPid,
+        'pins' : pins
+    }
+    
     return render_template('main_GPIO.html', **templateData)
 
 if __name__ == "__main__":

@@ -187,6 +187,7 @@ def main():
     #Command line options
     parser = argparse.ArgumentParser(description="PiGoSemiPro")
     parser.add_argument("--path", help="The location of the data directory")
+    parser.add_argument("--config", help="The location/name of the config file", default='.config_pigosemipro.cfg')
     parser.add_argument("--playstream", action='store_true', help="play stream instead of recording local file")
     parser.add_argument("--noshowLED", action='store_false', help="if specified => do NOT show camera LED")
     args = parser.parse_args()
@@ -198,7 +199,8 @@ def main():
     config = ConfigParser.RawConfigParser()
     ### I think this is weird -- have to do this to make the options not convert to lowercase
     config.optionxform = str
-    config.read('.config_pigosemipro.cfg')
+    #config.read('.config_pigosemipro.cfg')
+    config.read(args.config)
 
     CAMERAGPIOPIN = config.getint('Pins', 'CAMERAIN')
     PLAYERGPIOPIN = config.getint('Pins', 'PLAYERIN')
