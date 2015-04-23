@@ -1,0 +1,38 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides: PiGoSemiPro
+# Required-Start: $remote_fs $syslog
+# Required-Stop: $remote_fs $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: PiGoSemiPro
+# Description: This file starts and stops PiGoSemiPro
+# 
+### END INIT INFO
+
+DEAMON_NAME="PiGoSemiPro.py"
+export PIGOSEMIPRO_DIR=C:/home/pi/code_git/PiGoSemiPro
+
+case "$1" in
+ start)
+   $PIGOSEMIPRO_DIR/service/startup.sh
+   ;;
+ stop)
+   killall -q $DEAMON_NAME || true
+   sleep 10
+   ;;
+ force-stop)
+   killall -q $DEAMON_NAME || true
+   sleep 10
+   killall -q -9 $DEAMON_NAME || true
+   ;;
+ restart)
+   killall -q $DEAMON_NAME || true
+   sleep 20
+   $PIGOSEMIPRO_DIR/service/startup.sh
+   ;;
+ *)
+   echo "Usage: pigosemipro {start|stop|restart}" >&2
+   exit 3
+   ;;
+esac
