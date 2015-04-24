@@ -3,15 +3,17 @@
 # Provides: PiGoSemiPro
 # Required-Start: $remote_fs $syslog
 # Required-Stop: $remote_fs $syslog
-# Default-Start: 2 3 4 5
-# Default-Stop: 0 1 6
 # Short-Description: PiGoSemiPro
 # Description: This file starts and stops PiGoSemiPro
-# 
+#
 ### END INIT INFO
 
+#These need to be in the above block to automate start
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+
 DEAMON_NAME="PiGoSemiPro.py"
-export PIGOSEMIPRO_DIR=C:/home/pi/code_git/PiGoSemiPro
+export PIGOSEMIPRO_DIR=/home/tscloud/git_code/PiGoSemiPro
 
 case "$1" in
  start)
