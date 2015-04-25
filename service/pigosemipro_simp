@@ -13,7 +13,7 @@
 # Default-Stop: 0 1 6
 
 DEAMON_NAME="PiGoSemiPro.py"
-export PIGOSEMIPRO_DIR=/home/tscloud/git_code/PiGoSemiPro
+export PIGOSEMIPRO_DIR=/home/pi/git_code/PiGoSemiPro
 
 case "$1" in
  start)

@@ -29,9 +29,20 @@ for pin in pins:
 
 @app.route("/")
 def main():
+    # check status of PiGoSemiPro service
+    camStatusCmd = os.popen('service pigosemipro status')
+    camStatusMsg = camCmd.read()
+    startStopBtnMsg = None
+    if "failed" in camStatusMsg:
+        # service not staered
+        startStopBtnMsg = "Start"
+    else:
+        startStopBtnMsg = "Stop"
+    
     # Put the pin dictionary into the template data dictionary:
     templateData = {
         'pins' : pins
+        'startStopBtnMsg' : startStopBtnMsg
         }
     # Pass the template data into the template main_GPIO.html and return it to the user
     return render_template('main_GPIO.html', **templateData)
@@ -52,8 +63,8 @@ def action(changePin):
 
     # Along with the pin dictionary, put the message into the template data dictionary:
     templateData = {
-        'message' : message,
         'pins' : pins
+        'message' : message,
     }
 
     return render_template('main_GPIO.html', **templateData)
@@ -62,13 +73,13 @@ def action(changePin):
 @app.route("/start")
 def startCam():
     #start the cam
-    camCmd = os.popen('service wicd status')
-    camPid = camCmd.read()
+    camCmd = os.popen('service pigosemipro status')
+    camMsg = camCmd.read()
     
     # Put the message into the template data dictionary, still need to send the pins:
     templateData = {
-        'message' : 'Hopefully PiGoSemiPro started...%s' % camPid,
         'pins' : pins
+        'message' : 'Hopefully PiGoSemiPro started...%s' % camMsg,
     }
     
     return render_template('main_GPIO.html', **templateData)

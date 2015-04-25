@@ -179,8 +179,18 @@ def freeSpaceCheck(checkFile, thresh):
 
     return letsQuit
 
+def writePidFile():
+    print "writing pid file..."
+    pid = str(os.getpid())
+    f = open('/var/run/PiGoSemiPro', 'w')
+    f.write(pid)
+    f.close()
+
 def main():
     """it's the main...duh"""
+    #write the PID file
+    writePidFile()
+    
     #set gpio mode
     GPIO.setmode(GPIO.BOARD)
 

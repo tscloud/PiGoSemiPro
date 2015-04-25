@@ -1,33 +1,41 @@
-#!/bin/sh -e
+#!/bin/sh
 
-DAEMONPATH="/home/pi/git_code"
-DAEMON="$DAEMONPATH/PiGoSemiPro/PiGoSemiPro_cmd.py"
-# DAEMONARGS="--path=$DAEMONPATH --config=$DAEMONPATH/.config_pigosemipro.cfg > $DAEMONPATH/service.log 2>&1"
-DAEMONARGS="--path=$DAEMONPATH --config=$DAEMONPATH/.config_pigosemipro.cfg"
+DAEMONPATH="/home/pi/git_code/PiGoSemiPro"
+# used by DAEMON script
+export PIGOSEMIPRO_DIR=$DAEMONPATH
+DAEMON="$DAEMONPATH/service/startup.sh"
 DAEMONUSER="root"
-DEAMON_NAME="PiGoSemiPro_cmd.py"
+DEAMON_NAME="PiGoSemiPro"
+PIDFILE="/var/run/$DEAMON_NAME"
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin"
 
-test -x $DAEMON || exit 0
-echo $DAEMON
+# test -x $DAEMON || exit 0
 
 . /lib/lsb/init-functions
 
 d_start () {
+        # Checked the PID file exists and check the actual status of process
+        if [ -e $PIDFILE ]; then
+                status_of_proc -p $PIDFILE $DAEMON "$NAME process" && status="0" || status="$?"
+                # If the status is SUCCESS then don't need to start again.
+                if [ $status = "0" ]; then
+                        exit # Exit
+                fi
+        fi
         log_daemon_msg "Starting system $DEAMON_NAME Daemon"
-        start-stop-daemon --background --name $DEAMON_NAME --start --user $DAEMONUSER --exec $DAEMON $DAEMONARGS
+        start-stop-daemon --background --pidfile $PIDFILE --start --user $DAEMONUSER --exec $DAEMON
         log_end_msg $?
 }
 
 d_stop () {
         log_daemon_msg "Stopping system $DEAMON_NAME Daemon"
-        start-stop-daemon --name $DEAMON_NAME --stop --retry 5 --name $DEAMON_NAME
+        start-stop-daemon --stop --retry 5 --pidfile $PIDFILE --signal INT
         log_end_msg $?
+        /bin/rm -rf $PIDFILE
 }
 
 case "$1" in
-
         start|stop)
                 d_${1}
                 ;;
@@ -37,18 +45,11 @@ case "$1" in
                         d_start
                 ;;
 
-        force-stop)
-               d_stop
-                killall -q $DEAMON_NAME || true
-                sleep 2
-                killall -q -9 $DEAMON_NAME || true
-                ;;
-
         status)
-                status_of_proc "$DEAMON_NAME" "$DAEMON" "system-wide $DEAMON_NAME" && exit 0 || exit $?
+                status_of_proc -p $PIDFILE "$DEAMON_NAME" "$DAEMON" "system-wide $DEAMON_NAME" && exit 0 || exit $?
                 ;;
         *)
-                echo "Usage: /etc/init.d/$DEAMON_NAME {start|stop|force-stop|restart|reload|force-reload|status}"
+                echo "Usage: /etc/init.d/$DEAMON_NAME {start|stop|restart|reload|force-reload|status}"
                 exit 1
                 ;;
 esac
