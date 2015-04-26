@@ -27,27 +27,27 @@ for pin in pins:
     GPIO.setup(pin, GPIO.OUT)
     GPIO.output(pin, pins[pin]['state'])
 
-@app.route("/")
-def main():
+def serviceStatus():
     # check status of PiGoSemiPro service
     camStatusCmd = os.popen('service pigosemipro status')
-    camStatusMsg = camCmd.read()
-    startStopBtnMsg = None
+    camStatusMsg = camStatusCmd.read()
     if "failed" in camStatusMsg:
-        # service not staered
-        startStopBtnMsg = "Start"
+        # service not started
+        return "start"
     else:
-        startStopBtnMsg = "Stop"
+        return "stop"
     
+@app.route("/")
+def main():
     # Put the pin dictionary into the template data dictionary:
     templateData = {
-        'pins' : pins
-        'startStopBtnMsg' : startStopBtnMsg
+        'pins' : pins,
+        'startStopBtnMsg' : serviceStatus().capitalize()
         }
     # Pass the template data into the template main_GPIO.html and return it to the user
     return render_template('main_GPIO.html', **templateData)
 
-# The function below is executed when someone requests a URL with the pin number and action in it:
+# The function below is executed when someone requests a URL with the pin number
 @app.route("/<changePin>/toggle")
 def action(changePin):
     # Convert the pin from the URL into an integer:
@@ -63,23 +63,28 @@ def action(changePin):
 
     # Along with the pin dictionary, put the message into the template data dictionary:
     templateData = {
-        'pins' : pins
+        'pins' : pins,
         'message' : message,
+        'startStopBtnMsg' : serviceStatus().capitalize()
     }
 
     return render_template('main_GPIO.html', **templateData)
 
-# The function below is executed when someone requests a URL with the pin number and action in it:
-@app.route("/start")
-def startCam():
-    #start the cam
-    camCmd = os.popen('service pigosemipro status')
+# The function below is executed when someone hits start button
+@app.route("/startstop")
+def startStopCam():
+    #start or stop the cam
+    camCmd = os.popen('service pigosemipro %s' % serviceStatus())
     camMsg = camCmd.read()
+    
+    # wait for service to start/stop
+    time.sleep(2)
     
     # Put the message into the template data dictionary, still need to send the pins:
     templateData = {
-        'pins' : pins
-        'message' : 'Hopefully PiGoSemiPro started...%s' % camMsg,
+        'pins' : pins,
+        'message' : camMsg,
+        'startStopBtnMsg' : serviceStatus().capitalize()
     }
     
     return render_template('main_GPIO.html', **templateData)
