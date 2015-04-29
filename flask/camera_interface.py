@@ -14,7 +14,9 @@ config = ConfigParser.RawConfigParser()
 ### I think this is weird -- have to do this to make the options not convert to lowercase
 config.optionxform = str
 # hardcoded - not sure how to pass/set config file
-config.read('../.config_pigosemipro.cfg')
+config_file = '%s/.config_pigosemipro.cfg' % os.getenv('DAEMONPATH', '..')
+print "*** config_file: %s" % config_file
+config.read(config_file)
 
 # Create a dictionary called pins to store the pin number, name, and pin state:
 pins = OrderedDict()
@@ -27,9 +29,15 @@ for pin in pins:
     GPIO.setup(pin, GPIO.OUT)
     GPIO.output(pin, pins[pin]['state'])
 
+# write PID file
+pid = str(os.getpid())
+f = open('/var/run/flask-pi', 'w')
+f.write(pid)
+f.close()
+
 def serviceStatus():
     # check status of PiGoSemiPro service
-    camStatusCmd = os.popen('service pigosemipro status')
+    camStatusCmd = os.popen('service pigosemipro_serv status')
     camStatusMsg = camStatusCmd.read()
     if "failed" in camStatusMsg:
         # service not started
@@ -74,7 +82,7 @@ def action(changePin):
 @app.route("/startstop")
 def startStopCam():
     #start or stop the cam
-    camCmd = os.popen('service pigosemipro %s' % serviceStatus())
+    camCmd = os.popen('service pigosemipro_serv %s' % serviceStatus())
     camMsg = camCmd.read()
     
     # wait for service to start/stop
