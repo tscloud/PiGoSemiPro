@@ -1,0 +1,66 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides: PiGoSemiPro
+# Required-Start: $remote_fs $syslog
+# Required-Stop: $remote_fs $syslog
+# Short-Description: PiGoSemiPro
+# Description: This file starts and stops PiGoSemiPro
+#
+### END INIT INFO
+
+#These need to be in the above block to automate start
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+
+export DAEMONPATH="/home/pi/git_code/PiGoSemiPro"
+DAEMON="$DAEMONPATH/service/startup_flask-pi.sh"
+DAEMONUSER="root"
+DEAMON_NAME="flask-pi"
+PIDFILE="/var/run/$DEAMON_NAME"
+
+PATH="/sbin:/bin:/usr/sbin:/usr/bin"
+
+# test -x $DAEMON || exit 0
+
+. /lib/lsb/init-functions
+
+d_start () {
+        # Checked the PID file exists and check the actual status of process
+        if [ -e $PIDFILE ]; then
+                status_of_proc -p $PIDFILE $DAEMON "$NAME process" && status="0" || status="$?"
+                # If the status is SUCCESS then don't need to start again.
+                if [ $status = "0" ]; then
+                        exit # Exit
+                fi
+        fi
+        log_daemon_msg "Starting system $DEAMON_NAME Daemon"
+        start-stop-daemon --background --pidfile $PIDFILE --start --user $DAEMONUSER --exec $DAEMON
+        log_end_msg $?
+}
+
+d_stop () {
+        log_daemon_msg "Stopping system $DEAMON_NAME Daemon"
+        start-stop-daemon --stop --retry 5 --pidfile $PIDFILE --signal INT
+        log_end_msg $?
+        /bin/rm -rf $PIDFILE
+}
+
+case "$1" in
+        start|stop)
+                d_${1}
+                ;;
+
+        restart|reload|force-reload)
+                        d_stop
+                        d_start
+                ;;
+
+        status)
+                status_of_proc -p $PIDFILE "$DEAMON_NAME" "$DAEMON" "system-wide $DEAMON_NAME" && exit 0 || exit $?
+                ;;
+        *)
+                echo "Usage: /etc/init.d/$DEAMON_NAME {start|stop|restart|reload|force-reload|status}"
+                exit 1
+                ;;
+esac
+exit 0
